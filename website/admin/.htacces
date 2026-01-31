@@ -1,0 +1,8 @@
+Options All –Indexes
+
+<Files ~ "^.*\.(db)">
+order allow,deny
+deny from all
+satisfy all
+</Files>
+
