@@ -105,7 +105,7 @@ if ($installed) {
         $updqry = $pdo->prepare('UPDATE pages SET content = ? WHERE slug = ?');
         $updqry->execute(array($maintenance, "maintenance"));
         file_put_contents($basedir."index.html", $maintenance);
-                                
+        unlink($basedir."index.php");
     } else {
         include("header.php");    
         echo 'Please, create the first user: </br>';
