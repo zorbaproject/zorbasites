@@ -145,6 +145,32 @@ function list_src_pages() {
     return $src_pages;
 }
 
+function list_subdirs($dir) {
+    global $uploadfolder;
+    $files = scandir($dir);
+    $results = array();
+    foreach ($files as $key => $value) {
+        $path = realpath($dir . '/' . $value);
+        if (!is_dir($path) && $value != ".keep") {
+            $results[$value] = preg_replace('/^'.preg_quote($uploadfolder, '/').'/i','',$path);
+        } else if ($value != "." && $value != ".." && $value != ".keep") {
+            $results[$value] = list_subdirs($path);
+        }
+    }
+    return $results;
+}
+
+function get_upload_dirs($current_path = '') {
+    global $basedir;
+    global $uploadfolder;
+    if (is_dir($uploadfolder.'/'.$current_path) && str_contains($current_path, '..')==false && $current_path != '') {
+      $folderlist = list_subdirs($uploadfolder.'/'.$current_path);
+    } else {
+      $folderlist = list_subdirs($uploadfolder);
+    }
+    return $folderlist;
+}
+
 function get_page_from_path($mypath) {
     global $pdo;
     global $basedir;

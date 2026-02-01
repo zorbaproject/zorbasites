@@ -119,6 +119,10 @@ if(isLoggedIn()){
     <!--/div-->';
     echo '<input type="submit" value="Create new page" /></form>';
     
+    
+    echo '<h1>Files</h1>';
+    echo '<a href="upload.php">Manage files</a>';
+    
     include("footer.php");
     /* End page code */
     
