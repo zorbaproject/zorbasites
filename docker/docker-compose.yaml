@@ -9,3 +9,5 @@ services:
       - "8181:80"
     volumes:
       - ../website:/var/www/html
+      - ./apache2.conf:/etc/apache2/apache2.conf
+

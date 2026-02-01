@@ -1,0 +1,5 @@
+#Options All –Indexes
+
+<FilesMatch "\.db">
+	Require all denied
+</FilesMatch>
