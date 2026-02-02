@@ -4,6 +4,22 @@
 
 require_once 'config.php';
 
+function sql_clean($text) {
+    $clean = str_replace("\n","",$text);
+    $clean = htmlspecialchars($clean);
+    return $clean;
+}
+
+function slugify($text) {
+    $slug = preg_replace('/[^a-z0-9\-]/', '_', strtolower($text));
+    while (str_contains($slug, '__')) {
+        $slug = str_replace("__","_",$slug);
+    }
+    $slug = preg_replace('/^_+/', '', $slug);
+    $slug = preg_replace('/_+$/', '', $slug);
+    return $slug;
+}
+
 $installed = file_exists($db);
 if ($installed) {
     require_once 'utils.php';
@@ -12,6 +28,7 @@ if ($installed) {
         $installed = false;
     }
 }
+
 
 if ($installed) {
     echo "The website has already been installed. <a href='user.php'>Log in here.</a>";
