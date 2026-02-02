@@ -64,7 +64,7 @@ if(isLoggedIn()){
     <label>Template title:</label><input type="text" name="title" id="templatetitle"/>';
     echo '<input type="submit" value="Create new template" /></form>';
     
-    $result = $pdo->prepare('SELECT pages.id, pages.slug, pages.title, pages.public, pages.format, pages.section_id, sections.slug as section_slug, sections.title as section_title, sections.public as section_public, pages.template_id, templates.slug as template_slug, templates.title as template_title FROM pages LEFT JOIN sections on pages.section_id = sections.id LEFT JOIN templates ON pages.template_id = templates.id WHERE pages.deleted_on IS NULL AND sections.deleted_on IS NULL');
+    $result = $pdo->prepare('SELECT pages.id, pages.slug, pages.title, pages.public, pages.format, pages.section_id, pages.deleted_on, sections.slug as section_slug, sections.title as section_title, sections.public as section_public, pages.template_id, templates.slug as template_slug, templates.title as template_title FROM pages LEFT JOIN sections on pages.section_id = sections.id LEFT JOIN templates ON pages.template_id = templates.id WHERE pages.deleted_on IS NULL AND sections.deleted_on IS NULL');
     $result->execute();
     $pages = $result->fetchAll();
     echo '<h1>Pages</h1>';
@@ -122,6 +122,45 @@ if(isLoggedIn()){
     
     echo '<h1>Files</h1>';
     echo '<a href="upload.php">Manage files</a>';
+    
+    if(isset($_POST['render'])) {
+        foreach($pages as $row) {
+            $thispage = $row;
+            $ispublic = true;
+            if ($thispage['public'] != 1) $ispublic = false;
+            $secid = $thispage['section_id'];
+            $result = $pdo->prepare('SELECT * FROM sections WHERE id = ?');
+            $result->execute(array($secid));
+            $sec = $result->fetch();
+            while ( $sec['slug'] != 'root' ) {
+                $secid = $sec['parent'];
+                $result = $pdo->prepare('SELECT * FROM sections WHERE id = ?');
+                $result->execute(array($secid));
+                $sec = $result->fetch();
+                if ($sec['public'] != 1) {
+                    $ispublic = false;
+                    break;
+                }
+            }
+            if ($_POST['render'] == 'now' && is_null($thispage['deleted_on']) && $ispublic ) {
+                $rendercontent = generate_page($thispage['id'], '/theme/');
+                $pagepath = get_page_path($thispage['id']);
+                $renderpath = $basedir.'/'.$pagepath;
+                if (str_ends_with($renderpath, '/')) $renderpath .= 'index.html';
+                $renderpath = preg_replace('/\/+/','/',$renderpath);
+                $renderdir = preg_replace('/\/[^\/]*$/', '/', $renderpath);
+                if (!is_dir($renderdir)) mkdir($renderdir, 0755, true);
+                file_put_contents($renderpath, $rendercontent);
+                //TODO: optionally, insert in the same folder a standard .htaccess file
+                echo 'Rendered page: '.$pagepath.'</br>';
+            }
+            if ($thispage['public'] != 1) echo 'PAGE '.$thispage['id'].' IS NOT PUBLIC, cannot render.</br>';
+        }
+        $header_redirect = 'index.php';
+        echo "<a href='".$header_redirect."'>Website rendered </a> <meta http-equiv='refresh' content='0; url=".$header_redirect."'>";
+    }
+    
+    echo '<form action="index.php" method="POST"><input type="hidden" name="render" id="pagerender" value="now"/><input type="submit" value="Render website" /></form>';
     
     include("footer.php");
     /* End page code */
