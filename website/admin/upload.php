@@ -69,12 +69,12 @@ if(isLoggedIn()){
     echo '<form action="upload.php" method="post" enctype="multipart/form-data">';
     $allfiles = get_upload_dirs($current_path);
     //print_r($allfiles);
-    echo '<ul>';
+    echo '<ul class="list-group">';
     foreach ($allfiles as $key => $fullname) {
         if (is_array($fullname)) {
-            echo '<li><a href ="upload.php?path='.$current_path.$key.'">'.$key.'</a></li>';
+            echo '<li class="list-group-item"><i class="bi bi-folder2"></i><a href ="upload.php?path='.$current_path.$key.'">'.$key.'</a></li>';
         } else {
-            echo '<li><a href="../upload/'.$fullname.'">'.$key.'</a></li>';
+            echo '<li class="list-group-item"><i class="bi bi-file-earmark"></i><a href="../upload/'.$fullname.'">'.$key.'</a></li>';
         }
     }
     echo '</ul>';

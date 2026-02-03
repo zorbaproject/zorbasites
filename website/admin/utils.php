@@ -145,28 +145,28 @@ function list_src_pages() {
     return $src_pages;
 }
 
-function list_subdirs($dir) {
+function list_subdirs($dir, $prepend = '') {
     global $uploadfolder;
     $files = scandir($dir);
     $results = array();
     foreach ($files as $key => $value) {
         $path = realpath($dir . '/' . $value);
         if (!is_dir($path) && $value != ".keep") {
-            $results[$value] = preg_replace('/^'.preg_quote($uploadfolder, '/').'/i','',$path);
+            $results[$value] = $prepend.preg_replace('/^'.preg_quote($uploadfolder, '/').'/i','',$path);
         } else if ($value != "." && $value != ".." && $value != ".keep") {
-            $results[$value] = list_subdirs($path);
+            $results[$value] = list_subdirs($path, $prepend);
         }
     }
     return $results;
 }
 
-function get_upload_dirs($current_path = '') {
+function get_upload_dirs($current_path = '', $prepend = '') {
     global $basedir;
     global $uploadfolder;
     if (is_dir($uploadfolder.'/'.$current_path) && str_contains($current_path, '..')==false && $current_path != '') {
-      $folderlist = list_subdirs($uploadfolder.'/'.$current_path);
+      $folderlist = list_subdirs($uploadfolder.'/'.$current_path, $prepend);
     } else {
-      $folderlist = list_subdirs($uploadfolder);
+      $folderlist = list_subdirs($uploadfolder, $prepend);
     }
     return $folderlist;
 }

@@ -59,35 +59,74 @@ if(isset($_POST['submitButton'])){
 if (!isLoggedIn()) { //show login form if not logged in
 ?>
 <!DOCTYPE HTML>
-<html>
-<head>
-<title>Simple Php/Sqlite login</title>
-<meta name="Generator" content="BBedit">
-<meta name="Author" content="Zoria Media">
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<meta name="Keywords" content="simple php/sqlite login">
-<meta name="Owner" content="Rocky">
-<meta name="Description" content="Simple Php/Sqlite login">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<style type="text/css">
-body {text-align:center;margin-left:auto;margin-right:auto;height:100%;color:#f96302;}
-html {height:100%;}
-#id {max-width:30em;margin:0 auto;font-size:1.25em;}
-form input {margin:.25em 0.5em;}
-form label {display:inline-block;font-weight:bold;width:9em;text-align:right;}
-form input[type='submit'] {font-size:1.1em;padding:.2em 1.8em;background:#f96302;color:#fff;border:1px solid #66ccff;border-radius:9px 9px;}
-</style>
-</head>
-<body>
-<div id="login">
-<h1>Please login</h1>
-<form id="login" method="post" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>">
-<label for="email">Email</label>:<input type="text" name="email" id="email"><br>
-<label for="password">Password</label>:<input type="password" name="password" id="password"><br>
-<input type="submit" name="submitButton" id="submitButton" value="LOGIN">
-</form>
-</div>
-</body>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="Mark Otto, Jacob Thornton, and Bootstrap contributors">
+    <meta name="generator" content="Hugo 0.84.0">
+    <title>ZorbaSites Admin Login</title>
+
+    <link rel="canonical" href="https://getbootstrap.com/docs/5.0/examples/sign-in/">
+
+
+
+    <!-- Bootstrap core CSS -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+
+    <!-- Favicons -->
+<link rel="apple-touch-icon" href="/docs/5.0/assets/img/favicons/apple-touch-icon.png" sizes="180x180">
+<link rel="icon" href="/docs/5.0/assets/img/favicons/favicon-32x32.png" sizes="32x32" type="image/png">
+<link rel="icon" href="/docs/5.0/assets/img/favicons/favicon-16x16.png" sizes="16x16" type="image/png">
+<link rel="manifest" href="/docs/5.0/assets/img/favicons/manifest.json">
+<link rel="mask-icon" href="/docs/5.0/assets/img/favicons/safari-pinned-tab.svg" color="#7952b3">
+<link rel="icon" href="/docs/5.0/assets/img/favicons/favicon.ico">
+<meta name="theme-color" content="#7952b3">
+
+    <style>
+      .bd-placeholder-img {
+        font-size: 1.125rem;
+        text-anchor: middle;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        user-select: none;
+      }
+
+      @media (min-width: 768px) {
+        .bd-placeholder-img-lg {
+          font-size: 3.5rem;
+        }
+      }
+    </style>
+
+
+    <!-- Custom styles for this template -->
+    <link href="signin.css" rel="stylesheet">
+  </head>
+  <body class="text-center">
+
+<main class="form-signin">
+  <form id="login" method="post" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>">
+    <img class="mb-4" src="assets/zorbasites.png" alt="" width="72" height="57">
+    <h1 class="h3 mb-3 fw-normal">Please sign in</h1>
+
+    <div class="form-floating">
+      <input type="email" class="form-control" name="email" id="email" placeholder="name@example.com">
+      <label for="email">Email address</label>
+    </div>
+    <div class="form-floating">
+      <input type="password" class="form-control" name="password" id="password" placeholder="Password">
+      <label for="password">Password</label>
+    </div>
+
+    <button class="w-100 btn btn-lg btn-primary" type="submit" name="submitButton" id="submitButton">Sign in</button>
+    <!--p class="mt-5 mb-3 text-muted">&copy; 2017–2021</p-->
+  </form>
+</main>
+
+
+  </body>
 </html>
 
 <?php } ?>

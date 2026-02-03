@@ -9,6 +9,8 @@ if(isLoggedIn()){
     
     /* Page code */
     include("header.php");
+
+    echo '<div class="row mb-3">';
     $result = $pdo->prepare('SELECT id,slug,title,public,parent FROM sections WHERE deleted_on IS NULL');
     $result->execute();
     $sections = $result->fetchAll();
@@ -43,6 +45,8 @@ if(isLoggedIn()){
     echo '</select>';
     echo '<input type="submit" value="Create new section" /></form>';
     
+    echo '</div>';
+    echo '<div class="row mb-3">';
     $result = $pdo->prepare('SELECT id,slug,title FROM templates WHERE deleted_on IS NULL');
     $result->execute();
     $templates = $result->fetchAll();
@@ -67,6 +71,9 @@ if(isLoggedIn()){
     $result = $pdo->prepare('SELECT pages.id, pages.slug, pages.title, pages.public, pages.format, pages.section_id, pages.deleted_on, sections.slug as section_slug, sections.title as section_title, sections.public as section_public, pages.template_id, templates.slug as template_slug, templates.title as template_title FROM pages LEFT JOIN sections on pages.section_id = sections.id LEFT JOIN templates ON pages.template_id = templates.id WHERE pages.deleted_on IS NULL AND sections.deleted_on IS NULL');
     $result->execute();
     $pages = $result->fetchAll();
+
+    echo '</div>';
+    echo '<div class="row mb-3">';
     echo '<h1>Pages</h1>';
     echo '<table>';
     echo '<tr><th></th><th>Title</th><th>Slug</th><th>Section</th><th>Template</th><th>Format</th><th>Published</th></tr>';
@@ -118,7 +125,8 @@ if(isLoggedIn()){
     <label class="form-check-label" for="secpublic">Markdown</label>
     <!--/div-->';
     echo '<input type="submit" value="Create new page" /></form>';
-    
+    echo '</div>';
+    echo '<div class="row mb-3">';
     
     echo '<h1>Files</h1>';
     echo '<a href="upload.php">Manage files</a>';
@@ -160,8 +168,9 @@ if(isLoggedIn()){
         echo "<a href='".$header_redirect."'>Website rendered </a> <meta http-equiv='refresh' content='0; url=".$header_redirect."'>";
     }
     
-    echo '<form action="index.php" method="POST"><input type="hidden" name="render" id="pagerender" value="now"/><input type="submit" value="Render website" /></form>';
-    
+    //echo '<form action="index.php" method="POST"><input type="hidden" name="render" id="pagerender" value="now"/><input type="submit" value="Render website" /></form>';
+    echo '</div>';
+
     include("footer.php");
     /* End page code */
     

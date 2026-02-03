@@ -100,7 +100,7 @@ if(isLoggedIn()){
         
         echo '<h1>'.$template['title'].'</h1>';
         //print_r($template);
-        echo '<form action="edit_template.php?id='.$templateid.'" method="POST"><input type="hidden" name="deleted_on" id="pagedel" value="now"/><input type="submit" value="Delete page" /></form>';
+        echo '<form action="edit_template.php?id='.$templateid.'" method="POST"><input type="hidden" name="deleted_on" id="pagedel" value="now"/><input type="submit" value="Delete template" /></form>';
         echo '<form action="edit_template.php?id='.$templateid.'" method="POST">
         <label>Page title:</label><input type="text" name="title" id="pagetitle" value="'.$template['title'].'"/> <input type="submit" value="Save template" /> <a href="preview.php?template='.$templateid.'">Preview template</a> </br>';
         

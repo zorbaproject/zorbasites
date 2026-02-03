@@ -91,9 +91,12 @@ if(isLoggedIn()){
         $result = $pdo->prepare('SELECT pages.id, pages.title, pages.slug, sections.slug as section_slug, sections.title as section_title, sections.public as section_public FROM pages LEFT JOIN sections on pages.section_id = sections.id WHERE sections.id = ?');
         $result->execute(array($secid));
         $pages = $result->fetchAll();
+        echo 'Pages in this section:';
+        echo '<ul>';
         foreach($pages as $row) {
-            print_r($row);
+            echo '<li><a href="edit_page.php?id='.$row['id'].'">'.$row['title'].'</a></li>';
         }
+        echo '</ul>';
         
     }
     
