@@ -108,7 +108,7 @@ if (!isLoggedIn()) { //show login form if not logged in
 
 <main class="form-signin">
   <form id="login" method="post" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>">
-    <img class="mb-4" src="assets/zorbasites.png" alt="" width="72" height="57">
+    <img class="mb-4" src="assets/zorbasites.svg" alt="" width="72" height="57">
     <h1 class="h3 mb-3 fw-normal">Please sign in</h1>
 
     <div class="form-floating">
