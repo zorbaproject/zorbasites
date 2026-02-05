@@ -10,7 +10,8 @@ function createJsonTreeDom(json, generateCopyButton = false) {
       var e = document.createElement(tag);
       e.className = className;
       if (textContent)
-        e.textContent = textContent;
+        //e.textContent = textContent;
+          e.innerHTML = textContent;
       return e;
     };
 
@@ -30,7 +31,8 @@ function createJsonTreeDom(json, generateCopyButton = false) {
       case 'string':
         var str = JSON.stringify(json);
         var str = str.substring(1, str.length - 1);
-        var inner = createElement('span', 'stringValue', '"' + str + '"');
+        var inner = createElement('span', 'stringValue', '<a target="_blank" href="' + str + '"><i class="bi bi-eye-fill"></i></a>');
+        //var inner = createElement('span', 'stringValue', str);
         inner.dataset.valueData = str;
         if (jsonEscapeRe.test(str)) {
           var tooltip = createElement('span', 'tooltip', json);
@@ -94,15 +96,15 @@ function createJsonTreeDom(json, generateCopyButton = false) {
           var list = appendElement(parent, 'ul');
           var item = null;
           for (var i = 0; i != json.length; ++i) {
-            if (item)
-              appendText(item, ',');
+            /*if (item)
+              appendText(item, ',');*/
             item = document.createElement('li');
             var outer = appendElement(item, 'div');
             outer.className = 'key';
             const value = json[i];
             appendElement(outer, 'span');
-            if (generateCopyButton)
-              addCopyButton(outer, value);
+            /*if (generateCopyButton)
+              addCopyButton(outer, value);*/
             impl(value, item);
             list.appendChild(item);
           }
@@ -118,14 +120,14 @@ function createJsonTreeDom(json, generateCopyButton = false) {
           var list = appendElement(parent, 'ul');
           var item = null;
           for (var key of keys) {
-            if (item)
-              appendText(item, ',');
+            /*if (item)
+              appendText(item, ',');*/
             item = document.createElement('li');
             var outer = appendElement(item, 'div');
             outer.className = 'key';
             const value = json[key];
             var inner = appendElement(outer, 'span');
-            if (generateCopyButton)
+            if (generateCopyButton && typeof (value) == 'string')
               addCopyButton(outer, value);
             inner.dataset.keyData = key;
             inner.textContent = '"' + key + '"';
@@ -246,6 +248,11 @@ function filterItems(pattern, parent, regexpErrorHandler) {
     parent.appendChild(document.createTextNode('"'));
     return hasMarks;
   }
+  var appendHTMLLink = (parent, text) => {
+    var marked = document.createElement('stringValue');
+    marked.innerHTML = '<a target="_blank" href="' + text + '"><i class="bi bi-eye-fill"></i></a>';
+    parent.appendChild(marked);
+  }
 
   for (var e of document.querySelectorAll('.tree li')) {
     var foundName = (() => {
@@ -261,7 +268,9 @@ function filterItems(pattern, parent, regexpErrorHandler) {
       if (valueElement) {
         removeChildren(valueElement);
         if (valueElement.className == 'stringValue') {
-          return appendMarkedHTMLWithQuotes(valueElement, valueElement.dataset.valueData);
+          //return appendMarkedHTMLWithQuotes(valueElement, valueElement.dataset.valueData);
+          //return '<a target="_blank" href="' + valueElement.dataset.valueData + '"><i class="bi bi-eye-fill"></i></a>';
+          return appendHTMLLink(valueElement, valueElement.dataset.valueData);
         }
         return appendMarkedHTML(valueElement, valueElement.dataset.valueData);
       }

@@ -1,13 +1,13 @@
 .tree {
   /*font-family: "Courier New", Courier, monospace;
   white-space: nowrap;*/
-  overflow-wrap: break-word;
+  /*overflow-wrap: break-word;*/
 }
 
   .tree ul {
     list-style-type: none;
     padding: 0;
-    margin-left: 3em;
+    margin-left: 0.5em;
     margin-top: 0;
     margin-bottom: 0;
     counter-reset: childIndex;
@@ -18,12 +18,12 @@
   }
 
   .tree:not(.filter) li::before {
-    content: counter(childIndex);
+    /*content: counter(childIndex);*/
     color: lightgray;
     text-align: right;
     display: inline-block;
     min-width: 2.5em;
-    margin-left: -3em;
+    margin-left: -0.5em;
     padding-right: 0.5em;
   }
 
@@ -46,8 +46,9 @@
 
     .tree li > div.key .copy::after {
       content: "\1f4cb";
-      opacity: 0.33;
-      font-size: 1em;
+      /*content: "<i class="bi bi-clipboard"></i>";*/
+      opacity: 0.50;
+      font-size: 2em;
       background-color: #efefef;
       visibility: hidden;
       display: block;
@@ -59,7 +60,7 @@
       width: 1.4em;
       height: 1.4em;
       bottom: -0.2em;
-      left: 0.2em;
+      left: -1.5em;
       cursor: pointer;
     }
 
@@ -104,8 +105,8 @@
     display: inline-block;
     width: 1em;
     height: 1em;
-    margin-left: -2.9em;
-    margin-right: 1.9em;
+    /*margin-left: -2.9em;*/
+    /*margin-right: 1.9em;*/
     cursor: pointer;
     border-radius: 0.2em;
   }

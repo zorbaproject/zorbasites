@@ -12,12 +12,33 @@ if(isLoggedIn()){
     include("header.php");
     
     $current_path = '';
+    $pathstr = '';
     if (isset($_GET['path'])) {
+        $pathstr = $_GET['path'];
         $fpath = explode('/',$_GET['path']);
         $upfiles = get_upload_dirs();
         foreach ($fpath as $pathel) {
             $upfiles = $upfiles[$pathel];
             if (is_array($upfiles)) $current_path .= $pathel.'/';
+        }
+    }
+    
+    if(!empty($_POST['todelete'])) {
+        if ($current_path != '') {
+            foreach($_POST['todelete'] as $check) {
+                $check_path = preg_replace('/\/[^\/]+$/','/',$check);
+                $check_name = preg_replace('/^.+\//', '', $check);
+                if (str_starts_with($check, $current_path) && $current_path == $check_path) {
+                    $upfiles = get_upload_dirs();
+                    foreach ($fpath as $pathel) {
+                        $upfiles = $upfiles[$pathel];
+                    }
+                    if ($upfiles[$check_name] == $check) {
+                        unlink($uploadfolder.$current_path.$check_name);
+                        echo '<p>Deleted: '.$uploadfolder.$current_path.$check_name.'</p>';
+                    }
+                }
+            }
         }
     }
     
@@ -66,20 +87,24 @@ if(isLoggedIn()){
         }
     }
     
-    echo '<form action="upload.php" method="post" enctype="multipart/form-data">';
     $allfiles = get_upload_dirs($current_path);
     //print_r($allfiles);
+    echo '<form action="upload.php?path='.$pathstr.'" method="post">';
     echo '<ul class="list-group">';
     foreach ($allfiles as $key => $fullname) {
         if (is_array($fullname)) {
             echo '<li class="list-group-item"><i class="bi bi-folder2"></i><a href ="upload.php?path='.$current_path.$key.'">'.$key.'</a></li>';
         } else {
-            echo '<li class="list-group-item"><i class="bi bi-file-earmark"></i><a href="../upload/'.$fullname.'">'.$key.'</a></li>';
+            echo '<li class="list-group-item">
+            <input type="checkbox" name="todelete[]" value="'.$fullname.'">
+            <i class="bi bi-file-earmark"></i><a target="_blank" href="../upload/'.$fullname.'">'.$key.'</a></li>';
         }
     }
+    echo '<input type="submit" value="Delete selected" />';
     echo '</ul>';
     
-    echo 'Upload files or directory:<br />
+    echo 'Upload files:<br />
+    <form action="upload.php?path='.$pathstr.'" method="post" enctype="multipart/form-data">
     <!--input name="userfolder[]" type="file" webkitdirectory multiple /-->
     <input name="userfile[]" type="file" multiple />
     <input type="submit" value="Upload" />

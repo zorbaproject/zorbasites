@@ -100,7 +100,7 @@
   
   <div class="container-fluid">
       <div class="row">
-          <nav id="sidebarMenu" class="col-md-3 col-lg-2 d-md-block bg-light sidebar collapse">
+          <nav id="sidebarMenu" class="col-md-3 col-lg-2 d-md-block bg-light sidebar collapse overflow-auto">
               <div class="position-sticky pt-3">
                   <?php
                   $result = $pdo->prepare('SELECT * FROM sections WHERE deleted_on IS NULL AND public = 1 ORDER BY id');
@@ -159,9 +159,9 @@
                       <!--button onclick="for (var e of document.querySelectorAll('#test .tree > ul > li.folder')) e.classList.remove('folded')">Expand level 1</button -->
                       <!--button onclick="for (var e of document.querySelectorAll('#test .tree > ul > li.folder')) e.classList.add('folded')">Collapse level 1</button -->
                   </div>
-                  <div>
-                      <label for="filter">Filter:</label>
-                      <input id="filter" type="text" placeholder="enter regex"
+                  <div class="container">
+                      <!--label for="filter">Filter:</label-->
+                      <input id="filter" type="text" placeholder="Search regex"
                              oninput="filter(this.value)"
                              onkeypress="if (event.key == 'Enter') exapandFilteredItems(document.getElementById('test'))" />
                       <!-- button onclick="exapandFilteredItems(document.getElementById('test'))">Expand filtered items</button -->
@@ -174,13 +174,13 @@
                           }
                       </script>
                   </div>
-                  <div class="container">
-                      <div id="test" class="container horizontal-scrollable" style="margin: 1em; border: 1px solid gray;"></div>
+                  <div>
+                      <div id="test" class="container" style="margin: 1em; border: 1px solid gray; overflow-x: scroll"></div>
                   </div>
                   
                   <script type="text/javascript" src="jsontree.js"></script>
                   <script type="text/javascript">
-                      var json = <?php echo json_encode(get_upload_dirs('', '/upload/')); ?>;
+                      var json = <?php echo json_encode(get_upload_dirs('', '../upload/')); ?>;
                       
                       var tree = createJsonTreeDom(json, true);
                       document.getElementById('test').appendChild(tree);
