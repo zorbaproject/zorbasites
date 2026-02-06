@@ -188,6 +188,8 @@ function get_page_from_path($mypath) {
 }
 
 function replace_variables($text, $pageid) {
+    global $pdo;
+    $replaced = $text;
     $result = $pdo->prepare('SELECT pages.*,sections.slug as section_slug, sections.title as section_title, sections.public as section_public FROM pages LEFT JOIN sections on pages.section_id = sections.id WHERE pages.id = ?');
     $result->execute(array($pageid));
     $page = $result->fetch();
@@ -195,12 +197,15 @@ function replace_variables($text, $pageid) {
     $result->execute(array($page['section_id']));
     $section = $result->fetch();
     $variables = array(
-        '/\{\{ *page.title *\}\}/i' => $page['title'],
-        '/\{\{ *page.slug *\}\}/i' => $page['slug'],
-        '/\{\{ *page.path *\}\}/i' => get_page_path($page['id']),
-        '/\{\{ *section.title *\}\}/i' => $section['title']
-        );
-        //foreach variable, preg_replace it case insensitive in the text
+        '/\{\{ *page\.title *\}\}/i' => $page['title'],
+        '/\{\{ *page\.slug *\}\}/i' => $page['slug'],
+        '/\{\{ *page\.path *\}\}/i' => get_page_path($page['id']),
+        '/\{\{ *section\.title *\}\}/i' => $section['title']
+    );
+    foreach($variables as $search => $replace) {
+        $replaced = preg_replace($search, $replace, $replaced);
+    }
+    return $replaced;
 }
 
 function markdown_to_html($md) {
@@ -211,9 +216,44 @@ function markdown_to_html($md) {
     return $html;
 }
 
-function include_pages($html) {
+function include_pages($html, $pageid) {
+    global $pdo;
     $fullcontent = $html;
-    //TODO: allow including other templates or pages with {{ template:slug }}
+    $result = $pdo->prepare('SELECT pages.*,sections.slug as section_slug, sections.title as section_title, sections.public as section_public FROM pages LEFT JOIN sections on pages.section_id = sections.id WHERE pages.id = ?');
+    $result->execute(array($pageid));
+    $current_page = $result->fetch();
+    preg_match_all("/\{\{ *page: *([^ ]+) *\}\}/i", $fullcontent, $pages, PREG_PATTERN_ORDER);
+    //print_r($pages);
+    foreach($pages[0] as $i => $tofind) {
+        $toreplace = $pages[1][$i];
+        $rep_content = '';
+        $find_col = 'slug';
+        if (is_numeric($toreplace)) $find_col = 'id';
+        $result = $pdo->prepare('SELECT pages.id, pages.content FROM pages LEFT JOIN sections on pages.section_id = sections.id WHERE pages.'.$find_col.' = ? AND pages.deleted_on IS NULL AND sections.deleted_on IS NULL');
+        $result->execute(array($toreplace));
+        $page = $result->fetch();
+        if ($page) {
+            if ($page['id'] != $current_page['id']) $rep_content = include_pages($page['content'], $pageid);
+            if ($pageid > -1) $rep_content = replace_variables($rep_content, $pageid);
+        }
+        if (is_null($rep_content)) $rep_content = '';
+        $fullcontent = str_replace($tofind, $rep_content, $fullcontent);
+    }
+    preg_match_all("/\{\{ *template: *([^ ]+) *\}\}/i", $fullcontent, $templates, PREG_PATTERN_ORDER);
+    foreach($templates[0] as $i => $tofind) {
+        $toreplace = $templates[1][$i];
+        $rep_content = '';
+        $find_col = 'slug';
+        if (is_numeric($toreplace)) $find_col = 'id';
+        $result = $pdo->prepare('SELECT templates.id, templates.content FROM templates WHERE templates.'.$find_col.' = ? AND templates.deleted_on IS NULL');
+        $result->execute(array($toreplace));
+        $template = $result->fetch();
+        if ($template) {
+            if ($template['id'] != $current_page['template_id']) $rep_content = render_template($template['id'], '', $pageid);
+        }
+        if (is_null($rep_content)) $rep_content = '';
+        $fullcontent = str_replace($tofind, $rep_content, $fullcontent);
+    }
     return $fullcontent;
 }
 
@@ -225,8 +265,8 @@ function render_template($templateid, $content = '', $pageid = -1) {
     $template = $result->fetch();
     $fullcontent = $template['content'];
     $fullcontent = preg_replace('/\{\{ *content *\}\}/i', $content, $fullcontent);
+    $fullcontent = include_pages($fullcontent, $pageid);
     if ($pageid > -1) $fullcontent = replace_variables($fullcontent, $pageid);
-    $fullcontent = include_pages($fullcontent);
     return $fullcontent;
 }
 
@@ -239,7 +279,7 @@ function generate_page($pageid, $urlprefix = '') {
     $fullcontent = $page['content'];
     if ($page['format']=='md') $fullcontent = markdown_to_html($page['content']);
     if (is_null($page['template_id'])==false) {
-        $fullcontent = render_template($page['template_id'], $fullcontent);
+        $fullcontent = render_template($page['template_id'], $fullcontent, $page['id']);
     }
     $fullcontent = preg_replace('~(?:src|action|href)=[\'"]\K(?!http)[^\'"]*~',$urlprefix."$0",$fullcontent); //TODO: maybe check wether the file actually exists
     return $fullcontent;
