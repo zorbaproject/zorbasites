@@ -4,23 +4,6 @@
 
 require_once 'config.php';
 
-function sql_clean($text) {
-    $clean = str_replace("\n","",$text);
-    $clean = htmlspecialchars($clean);
-    return $clean;
-}
-
-function slugify($text) {
-    $slug = preg_replace('/[^a-z0-9\-]/', '_', strtolower($text));
-    while (str_contains($slug, '__')) {
-        $slug = str_replace("__","_",$slug);
-    }
-    $slug = preg_replace('/^_+/', '', $slug);
-    $slug = preg_replace('/_+$/', '', $slug);
-    return $slug;
-}
-
-$installed = file_exists($db);
 if ($installed) {
     require_once 'utils.php';
     $tableCheck = $pdo->query("SELECT name FROM sqlite_master WHERE name='users'");
@@ -37,6 +20,7 @@ if ($installed) {
     
     if(isset($_POST['user']) && isset($_POST['password'])) {
         
+        require_once 'utils.php';        
         $user = slugify($_POST['user']);
         $email = sql_clean($_POST['email']);
         $fullname = sql_clean($_POST['fullname']);

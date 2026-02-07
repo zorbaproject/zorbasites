@@ -103,35 +103,37 @@
           <nav id="sidebarMenu" class="col-md-3 col-lg-2 d-md-block bg-light sidebar collapse overflow-auto">
               <div class="position-sticky pt-3">
                   <?php
-                  $result = $pdo->prepare('SELECT * FROM sections WHERE deleted_on IS NULL AND public = 1 ORDER BY id');
-                  $result->execute();
-                  $barsections = $result->fetchAll();
-                  foreach ($barsections as $sec) {
-                  if ($sec['slug'] != 'root') {
-                  $secpath = get_sections_path($sec['id']);
-                  $secpath_str = '';
-                  foreach ($secpath as $sc) {
-                  $secpath_str .= '/'.$sc;
-                  }
-                  $secpath_str = str_replace('//','/',$secpath_str);
-                  echo '<h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
-                  <span>'.$secpath_str.'</span>
-                  <a class="link-secondary" href="#" aria-label="Add a new report">
-                  <span data-feather="plus-circle"></span>
-                  </a>
-                  </h6>';
-                  }
-                  echo '<ul class="nav flex-column mb-2">';
-                  $result = $pdo->prepare('SELECT pages.id, pages.title, pages.slug, sections.slug as section_slug, sections.title as section_title, sections.public as section_public FROM pages LEFT JOIN sections on pages.section_id = sections.id WHERE sections.id = ? ORDER BY pages.id');
-                  $result->execute(array($sec['id']));
-                  $barpages = $result->fetchAll();
-                  foreach($barpages as $pg) {
-                  echo '<li class="nav-item">
-                  <a class="nav-link" href="edit_page.php?id='.$pg['id'].'">
-                  <span data-feather="file-text"></span>'.$pg['title'].'</a>
-                  </li>';
-                  }
-                  echo '</ul>';
+                      if ($installed) {
+                      $result = $pdo->prepare('SELECT * FROM sections WHERE deleted_on IS NULL AND public = 1 ORDER BY id');
+                      $result->execute();
+                      $barsections = $result->fetchAll();
+                      foreach ($barsections as $sec) {
+                          if ($sec['slug'] != 'root') {
+                          $secpath = get_sections_path($sec['id']);
+                          $secpath_str = '';
+                          foreach ($secpath as $sc) {
+                              $secpath_str .= '/'.$sc;
+                          }
+                          $secpath_str = str_replace('//','/',$secpath_str);
+                          echo '<h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
+                          <span>'.$secpath_str.'</span>
+                          <a class="link-secondary" href="#" aria-label="Add a new report">
+                          <span data-feather="plus-circle"></span>
+                          </a>
+                          </h6>';
+                      }
+                      echo '<ul class="nav flex-column mb-2">';
+                      $result = $pdo->prepare('SELECT pages.id, pages.title, pages.slug, sections.slug as section_slug, sections.title as section_title, sections.public as section_public FROM pages LEFT JOIN sections on pages.section_id = sections.id WHERE sections.id = ? ORDER BY pages.id');
+                      $result->execute(array($sec['id']));
+                      $barpages = $result->fetchAll();
+                      foreach($barpages as $pg) {
+                          echo '<li class="nav-item">
+                          <a class="nav-link" href="edit_page.php?id='.$pg['id'].'">
+                          <span data-feather="file-text"></span>'.$pg['title'].'</a>
+                          </li>';
+                      }
+                      echo '</ul>';
+                      }
                   }
                   ?>
                   
@@ -180,7 +182,7 @@
                   
                   <script type="text/javascript" src="jsontree.js"></script>
                   <script type="text/javascript">
-                      var json = <?php echo json_encode(get_upload_dirs('', '../upload/')); ?>;
+                      var json = <?php if ($installed) echo json_encode(get_upload_dirs('', '../upload/')); ?>;
                       
                       var tree = createJsonTreeDom(json, true);
                       document.getElementById('test').appendChild(tree);

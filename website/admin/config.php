@@ -11,4 +11,6 @@ $basedir = preg_replace('/[^\/]*$/', '', realpath(__DIR__));
 
 $uploadfolder = $basedir.'upload/';
 
+$installed = file_exists($db);
+
 ?>

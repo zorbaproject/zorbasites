@@ -8,7 +8,8 @@ $admin_location = basename(__DIR__); //The default is "admin", but you can renam
 
 $protected_pages = [ $admin_location, "maintenance", "theme", "index" ]; //These pages/sections cannot be deleted, moved or created
 
-$pdo = new \PDO("sqlite:$db");
+$pdo = null;
+if ($installed) $pdo = new \PDO("sqlite:$db");
 
 use FastVolt\Helper\Markdown;
 
