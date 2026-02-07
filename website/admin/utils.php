@@ -1,8 +1,12 @@
 <?php
 
-require_once 'config.php';
+/*
+TODO: maybe activate these in dev environment
+ini_set('display_errors', '1');
+ini_set('display_startup_errors', '1');
+error_reporting(E_ALL);*/
 
-require 'vendor/autoload.php';
+require_once 'config.php';
 
 $admin_location = basename(__DIR__); //The default is "admin", but you can rename the folder to reduce bot attacks
 
@@ -11,7 +15,12 @@ $protected_pages = [ $admin_location, "maintenance", "theme", "index" ]; //These
 $pdo = null;
 if ($installed) $pdo = new \PDO("sqlite:$db");
 
-use FastVolt\Helper\Markdown;
+if (version_compare(phpversion(), '8.0.0') >= 0) {
+    require 'vendor/autoload.php';
+} else {
+    require 'php7_support.php';
+}
+//use FastVolt\Helper\Markdown;
 
 
 function sql_clean($text) {
@@ -209,11 +218,55 @@ function replace_variables($text, $pageid) {
     return $replaced;
 }
 
+//Thanks to https://www.linkedin.com/pulse/write-simple-php-script-convert-md-html-callan-milne-bqwuc
+function mdToHTML (
+    $input,
+    $subtitleElemType = 'h2'  #String HTML Tag name to use for second-level headings
+) {
+    // Convert paragraphs
+    $htmlContent = preg_replace(
+        '/([\S ]+)/', 
+        '<p>$1</p>', 
+        $article->text
+    );
+  
+    // Convert headings
+    $htmlContent = preg_replace(
+        '/<p>## ([\S ]+)<\/p>/', 
+        sprintf(
+            '<%s>$1</%s>',
+            $subtitleElemType,
+            $subtitleElemType
+        ),
+        $htmlContent
+    );
+  
+    // Convert lists
+    $htmlContent = preg_replace(
+        '/<p>- ([\S ]+)<\/p>/', 
+        '<li>$1</li>', 
+        $htmlContent
+    );
+
+    $htmlContent = preg_replace(
+        '/((<li>.*<\/li>\s*)+)/', 
+        '<ul>$1</ul>', 
+        $htmlContent
+    );
+
+    // Output HTML
+    echo $htmlContent;
+}        
+
 function markdown_to_html($md) {
     $html = $md;
-    $markdown = new Markdown(); // or Markdown::new()
-    $markdown->setContent($md);
-    $html = $markdown->getHtml();
+    try {
+        $markdown = new FastVolt\Helper\Markdown(); // or Markdown::new()
+        $markdown->setContent($md);
+        $html = $markdown->getHtml();
+    } catch (Exception $e) {
+        $html = mdToHTML($md);
+    }
     return $html;
 }
 
