@@ -31,7 +31,9 @@ function createJsonTreeDom(json, generateCopyButton = false) {
       case 'string':
         var str = JSON.stringify(json);
         var str = str.substring(1, str.length - 1);
-        var inner = createElement('span', 'stringValue', '<a target="_blank" href="' + str + '"><i class="bi bi-eye-fill"></i></a>');
+        var imgtooltip = '';
+        if (str.endsWith('.png') || str.endsWith('.jpg') || str.endsWith('.jpeg') || str.endsWith('.svg') || str.endsWith('.ico') || str.endsWith('.webp') ) imgtooltip = 'data-bs-toggle="tooltip" data-bs-html="true" title="<img height=\'64px\' src=\''+ str +'\' />"';
+        var inner = createElement('span', 'stringValue', '<a target="_blank" href="' + str + '" '+imgtooltip+'><i class="bi bi-eye-fill"></i></a>');
         //var inner = createElement('span', 'stringValue', str);
         inner.dataset.valueData = str;
         if (jsonEscapeRe.test(str)) {
@@ -248,9 +250,11 @@ function filterItems(pattern, parent, regexpErrorHandler) {
     parent.appendChild(document.createTextNode('"'));
     return hasMarks;
   }
-  var appendHTMLLink = (parent, text) => {
+  var appendHTMLLink = (parent, str) => {
     var marked = document.createElement('stringValue');
-    marked.innerHTML = '<a target="_blank" href="' + text + '"><i class="bi bi-eye-fill"></i></a>';
+    var imgtooltip = '';
+    if (str.endsWith('.png') || str.endsWith('.jpg') || str.endsWith('.jpeg') || str.endsWith('.svg') || str.endsWith('.ico') || str.endsWith('.webp') ) imgtooltip = 'data-bs-toggle="tooltip" data-bs-html="true" title="<img height=\'64px\' src=\''+ str +'\' />"';
+    marked.innerHTML = '<a target="_blank" href="' + str + '" '+ imgtooltip +'><i class="bi bi-eye-fill"></i></a>';
     parent.appendChild(marked);
   }
 
@@ -283,6 +287,7 @@ function filterItems(pattern, parent, regexpErrorHandler) {
       } while (e.tagName == 'LI');
     }
   }
+  enableTooltips();
 }
 
 function exapandFilteredItems(parent) {
