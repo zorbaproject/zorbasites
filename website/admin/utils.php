@@ -367,6 +367,18 @@ function include_pages($html, $pageid) {
         if (is_null($rep_content)) $rep_content = '';
         $fullcontent = str_replace($tofind, $rep_content, $fullcontent);
     }
+    preg_match_all("/\{\{ *pagepath: *([^ ]+) *\}\}/i", $fullcontent, $pages, PREG_PATTERN_ORDER);
+    //print_r($pages);
+    foreach($pages[0] as $i => $tofind) {
+        $toreplace = $pages[1][$i];
+        $rep_content = '';
+        $find_col = 'slug';
+        if (is_numeric($toreplace)) $find_col = 'id';
+        $result = $pdo->prepare('SELECT pages.id, pages.content FROM pages LEFT JOIN sections on pages.section_id = sections.id WHERE pages.'.$find_col.' = ? AND pages.deleted_on IS NULL AND sections.deleted_on IS NULL');
+        $result->execute(array($toreplace));
+        $page = $result->fetch();
+        $fullcontent = str_replace($tofind, get_page_path($page['id']), $fullcontent);
+    }
     return $fullcontent;
 }
 
@@ -393,6 +405,9 @@ function generate_page($pageid, $urlprefix = '') {
     if ($page['format']=='md') $fullcontent = markdown_to_html($page['content']);
     if (is_null($page['template_id'])==false) {
         $fullcontent = render_template($page['template_id'], $fullcontent, $page['id']);
+    } else {
+        $fullcontent = include_pages($fullcontent, $pageid);
+        if ($pageid > -1) $fullcontent = replace_variables($fullcontent, $pageid);
     }
     $fullcontent = preg_replace('~(?:src|action|href)=[\'"]\K(?!http)[^\'"]*~',$urlprefix."$0",$fullcontent); //TODO: maybe check wether the file actually exists
     return $fullcontent;

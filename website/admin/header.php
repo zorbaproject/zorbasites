@@ -115,7 +115,7 @@
                           $secpath_str = str_replace('//','/',$secpath_str);
                           echo '<h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
                           <span>'.$secpath_str.'</span>
-                          <a class="link-secondary" href="#" aria-label="Add a new report">
+                          <a class="link-secondary" href="#" aria-label="">
                           <span data-feather="plus-circle"></span>
                           </a>
                           </h6>';
@@ -126,8 +126,9 @@
                       $barpages = $result->fetchAll();
                       foreach($barpages as $pg) {
                           echo '<li class="nav-item">
-                          <a class="nav-link" href="edit_page.php?id='.$pg['id'].'">
-                          <span data-feather="file-text"></span>'.$pg['title'].'</a>
+                          <div ><a href="#" onclick="navigator.clipboard.writeText(\'{{ pagepath: '.$pg['id'].' }}\')">&#x1F4CB;</a>
+                          <a class="nav-link" style="display:inline;" href="edit_page.php?id='.$pg['id'].'" >'.$pg['title'].'</a>
+                          </div>
                           </li>';
                       }
                       echo '</ul>';
