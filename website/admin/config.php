@@ -13,4 +13,7 @@ $uploadfolder = $basedir.'upload/';
 
 $installed = file_exists($db);
 
+$debug = false;
+//$debug = true;  //Uncomment this to show errors
+
 ?>

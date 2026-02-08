@@ -1,10 +1,10 @@
 <?php
 
-/*
-TODO: maybe activate these in dev environment
-ini_set('display_errors', '1');
-ini_set('display_startup_errors', '1');
-error_reporting(E_ALL);*/
+if ($debug) {
+    ini_set('display_errors', '1');
+    ini_set('display_startup_errors', '1');
+    error_reporting(E_ALL);
+}
 
 require_once 'config.php';
 
@@ -227,7 +227,7 @@ function mdToHTML (
     $htmlContent = preg_replace(
         '/([\S ]+)/', 
         '<p>$1</p>', 
-        $article->text
+        $input
     );
   
     // Convert headings
@@ -247,10 +247,69 @@ function mdToHTML (
         '<li>$1</li>', 
         $htmlContent
     );
+    
+    $htmlContent = preg_replace(
+        '/<p>\* ([\S ]+)<\/p>/', 
+        '<li>$1</li>', 
+        $htmlContent
+    );
 
     $htmlContent = preg_replace(
         '/((<li>.*<\/li>\s*)+)/', 
         '<ul>$1</ul>', 
+        $htmlContent
+    );
+    
+    $htmlContent = preg_replace(
+        '/<p>[0-9]+\. ([\S ]+)<\/p>/', 
+        '<lio>$1</lio>', 
+        $htmlContent
+    );
+
+    $htmlContent = preg_replace(
+        '/((<lio>.*<\/lio>\s*)+)/', 
+        '<ol>$1</ol>', 
+        $htmlContent
+    );
+    $htmlContent = preg_replace(
+        '/(<\/*)lio>/', 
+        '$1li>', 
+        $htmlContent
+    );
+    
+    //Convert bold and italic
+    $htmlContent = preg_replace(
+        '/\*\*([^\*]+)\*\*/', 
+        '<b>$1</b>', 
+        $htmlContent
+    );
+    $htmlContent = preg_replace(
+        '/\*([^\*]+)\*/', 
+        '<i>$1</i>', 
+        $htmlContent
+    );
+    
+    //Links and images
+    $htmlContent = preg_replace(
+        '/\!\[(.*)\]\((.+)\)/', 
+        '<img title="$1" src="$2"/>', 
+        $htmlContent
+    );
+    $htmlContent = preg_replace(
+        '/\[(.*)\]\((.+)\)/', 
+        '<a href="$2">$1</a>', 
+        $htmlContent
+    );
+    
+    //Quote
+    $htmlContent = preg_replace(
+        '/<p>> ([\S ]+)<\/p>/', 
+        '<pre>$1</pre>', 
+        $htmlContent
+    );
+    $htmlContent = preg_replace(
+        '/<\/pre>(\s*)<pre>/', 
+        '$1', 
         $htmlContent
     );
 
@@ -260,11 +319,11 @@ function mdToHTML (
 
 function markdown_to_html($md) {
     $html = $md;
-    try {
+    if(class_exists('FastVolt\Helper\Markdown')) {
         $markdown = new FastVolt\Helper\Markdown(); // or Markdown::new()
         $markdown->setContent($md);
         $html = $markdown->getHtml();
-    } catch (Exception $e) {
+    } else {
         $html = mdToHTML($md);
     }
     return $html;

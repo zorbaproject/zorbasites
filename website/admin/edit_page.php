@@ -72,7 +72,7 @@ if(isLoggedIn()){
                             $fromdbpage = $result->fetch();
                             $fromcontent = $fromdbpage['content'];
                             $pageformat = $fromdbpage['format'];
-                            $updqry = $pdo->prepare('UPDATE pages SET content = ?, format = ?, WHERE id = ?');
+                            $updqry = $pdo->prepare('UPDATE pages SET content = ?, format = ? WHERE id = ?');
                             $updqry->execute(array($fromcontent, $pageformat, $pageid));
                             $pagetemplate = $fromdbpage['template_id'];
                             if ($pagetemplate != '' && is_null($pagetemplate)==false) {
@@ -150,7 +150,7 @@ if(isLoggedIn()){
         }
         
         $header_redirect = 'edit_page.php?id='.$pageid;
-        echo "<a href='".$header_redirect."'>Page updated, go to its details</a> <meta http-equiv='refresh' content='0; url=".$header_redirect."'>";
+        if (!$debug) echo "<a href='".$header_redirect."'>Page updated, go to its details</a> <meta http-equiv='refresh' content='0; url=".$header_redirect."'>";
     }
     
     if(isset($_GET['id'])) {
@@ -174,7 +174,7 @@ if(isLoggedIn()){
                 $updqry = $pdo->prepare('UPDATE pages SET deleted_on = CURRENT_TIMESTAMP WHERE id = ?');
                 $updqry->execute(array($pageid));
                 $header_redirect = 'index.php';
-                echo "<a href='".$header_redirect."'>Page deleted, go back to index </a> <meta http-equiv='refresh' content='0; url=".$header_redirect."'>";
+                if (!$debug) echo "<a href='".$header_redirect."'>Page deleted, go back to index </a> <meta http-equiv='refresh' content='0; url=".$header_redirect."'>";
             }
         }
         
@@ -197,7 +197,7 @@ if(isLoggedIn()){
         echo '<form action="edit_page.php?id='.$pageid.'" method="POST"><input type="hidden" name="deleted_on" id="pagedel" value="now"/><input type="submit" value="Delete page" /></form>';
         echo '<form action="edit_page.php?id='.$pageid.'" method="POST"><input type="hidden" name="render" id="pagerender" value="now"/><input type="submit" value="Render page" /></form>';
         echo '<form action="edit_page.php?id='.$pageid.'" method="POST">
-        <label>Page title:</label><input type="text" name="title" id="pagetitle" value="'.$page['title'].'"/> <input type="submit" value="Save page" /> <a href="preview.php?page='.$pageid.'">Preview page</a> <a href="'.get_page_path($pageid).'">View current version</a> </br>';
+        <label>Page title:</label><input type="text" name="title" id="pagetitle" value="'.$page['title'].'"/> <input type="submit" value="Save page" /> <a target="_blank" href="preview.php?page='.$pageid.'">Preview page</a> <a target="_blank" href="..'.get_page_path($pageid).'">View current version</a> </br>';
         echo '<label>Section:</label><select name="section" id="pagesection"/>';
         foreach($sections as $row) {
             $secpath = get_sections_path($row['id']);

@@ -51,7 +51,7 @@ if(isLoggedIn()){
         }
         
         $header_redirect = 'edit_section.php?id='.$secid;
-        echo "<a href='".$header_redirect."'>Section updated, go to its details</a> <meta http-equiv='refresh' content='0; url=".$header_redirect."'>";
+        if (!$debug) echo "<a href='".$header_redirect."'>Section updated, go to its details</a> <meta http-equiv='refresh' content='0; url=".$header_redirect."'>";
     }
     
     if(isset($_GET['id'])) {

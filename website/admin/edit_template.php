@@ -77,7 +77,7 @@ if(isLoggedIn()){
         }
         
         $header_redirect = 'edit_template.php?id='.$templateid;
-        echo "<a href='".$header_redirect."'>Page updated, go to its details</a> <meta http-equiv='refresh' content='0; url=".$header_redirect."'>";
+        if (!$debug) echo "<a href='".$header_redirect."'>Page updated, go to its details</a> <meta http-equiv='refresh' content='0; url=".$header_redirect."'>";
     }
     
     if(isset($_GET['id'])) {
@@ -94,7 +94,7 @@ if(isLoggedIn()){
                 $updqry = $pdo->prepare('UPDATE templates SET deleted_on = CURRENT_TIMESTAMP WHERE id = ?');
                 $updqry->execute(array($templateid));
                 $header_redirect = 'index.php';
-                echo "<a href='".$header_redirect."'>Page deleted, go back to index </a> <meta http-equiv='refresh' content='0; url=".$header_redirect."'>";
+                if (!$debug) echo "<a href='".$header_redirect."'>Page deleted, go back to index </a> <meta http-equiv='refresh' content='0; url=".$header_redirect."'>";
             }
         }
         

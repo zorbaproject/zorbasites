@@ -80,7 +80,7 @@ if(isLoggedIn()){
     foreach($pages as $row) {
         //print_r($row);
         echo '<tr>';
-        echo '<td><a href="edit_page.php?id='.$row['id'].'"><i class="bi bi-pencil-fill"></i></a><a href="'.get_page_path($row['id']).'"><i class="bi bi-eye-fill"></i></a></td>';
+        echo '<td><a href="edit_page.php?id='.$row['id'].'"><i class="bi bi-pencil-fill"></i></a><a href="..'.get_page_path($row['id']).'"><i class="bi bi-eye-fill"></i></a></td>';
         echo '<td>'.$row['title'].'</td>';
         echo '<td>'.$row['slug'].'</td>';
         echo '<td><a href="edit_section.php?id='.$row['section_id'].'">'.$row['section_title'].'</a></td>';
@@ -165,7 +165,7 @@ if(isLoggedIn()){
             if ($thispage['public'] != 1) echo 'PAGE '.$thispage['id'].' IS NOT PUBLIC, cannot render.</br>';
         }
         $header_redirect = 'index.php';
-        echo "<a href='".$header_redirect."'>Website rendered </a> <meta http-equiv='refresh' content='0; url=".$header_redirect."'>";
+        if (!$debug) echo "<a href='".$header_redirect."'>Website rendered </a> <meta http-equiv='refresh' content='0; url=".$header_redirect."'>";
     }
     
     //echo '<form action="index.php" method="POST"><input type="hidden" name="render" id="pagerender" value="now"/><input type="submit" value="Render website" /></form>';
