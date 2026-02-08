@@ -13,11 +13,11 @@
 
 
     <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <link href="assets/bootstrap/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
 
     <!-- script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script -->
 
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="assets/bootstrap/bootstrap-icons.min.css">
 
     <!-- TinyMCE -->
     <script src='assets/tinymce/js/tinymce/tinymce.min.js' referrerpolicy='origin'></script>
@@ -36,20 +36,17 @@
       })
     </script>
 
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.63.1/codemirror.min.css" /><script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.63.1/codemirror.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.63.1/mode/javascript/javascript.min.js"></script>
+    <link rel="stylesheet" href="assets/codemirror/codemirror.min.css" />
+    <script src="assets/codemirror/codemirror.min.js"></script>
+    <script src="assets/codemirror/javascript.min.js"></script>
     
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.css">
-         <script src="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.js"></script>
+    <link rel="stylesheet" href="assets/easymde/easymde.min.css">
+         <script src="assets/easymde/easymde.min.js"></script>
     
     <link rel="stylesheet" href="jsontree.css" />
     
         <!-- Favicons -->
-    <link rel="apple-touch-icon" href="/docs/5.0/assets/img/favicons/apple-touch-icon.png" sizes="180x180">
-    <link rel="icon" href="/docs/5.0/assets/img/favicons/favicon-32x32.png" sizes="32x32" type="image/png">
-    <link rel="icon" href="/docs/5.0/assets/img/favicons/favicon-16x16.png" sizes="16x16" type="image/png">
-    <link rel="manifest" href="/docs/5.0/assets/img/favicons/manifest.json">
-    <link rel="mask-icon" href="/docs/5.0/assets/img/favicons/safari-pinned-tab.svg" color="#7952b3">
-    <link rel="icon" href="/docs/5.0/assets/img/favicons/favicon.ico">
+    <link rel="icon" href="assets/zorbasites.ico">
     <meta name="theme-color" content="#7952b3">
 
     <style>
@@ -78,7 +75,8 @@
   
   
   <header class="navbar navbar-dark sticky-top bg-dark flex-md-nowrap p-0 shadow">
-      <a class="navbar-brand col-md-3 col-lg-2 me-0 px-3" href="./">ZorbaSite</a>
+      <a class="navbar-brand col-md-3 col-lg-2 me-0 px-3" href="./">
+          <img style="margin-right: 5px" src="assets/zorbasites.svg" alt="" height="24">ZorbaSite</a>
       
       <div class="d-flex justify-content-between">
           
