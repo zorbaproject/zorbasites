@@ -47,19 +47,20 @@ if(isLoggedIn()){
     
     echo '</div>';
     echo '<div class="row mb-3">';
-    $result = $pdo->prepare('SELECT id,slug,title FROM templates WHERE deleted_on IS NULL');
+    $result = $pdo->prepare('SELECT templates.id,templates.slug,templates.title, COUNT(pages.id) as page_count FROM templates LEFT JOIN pages ON templates.id = pages.template_id WHERE templates.deleted_on IS NULL GROUP BY templates.id,templates.slug,templates.title');
     $result->execute();
     $templates = $result->fetchAll();
     echo '<h1>Templates</h1>';
     echo '<p>Templates are special pages that can be used as a skeleton for other pages.</p>';
     echo '<table>';
-    echo '<tr><th></th><th>Title</th><th>Slug</th></tr>';
+    echo '<tr><th></th><th>Title</th><th>Slug</th><th>Pages</th></tr>';
     foreach($templates as $row) {
         //print_r($row);
         echo '<tr>';
         echo '<td><a href="edit_template.php?id='.$row['id'].'"><i class="bi bi-pencil-fill"></i></a></td>';
         echo '<td>'.$row['title'].'</td>';
         echo '<td>'.$row['slug'].'</td>';
+        echo '<td>'.$row['page_count'].'</td>';
         echo '</tr>';
     }
     echo '</table>';
