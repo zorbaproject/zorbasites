@@ -133,40 +133,15 @@ if(isLoggedIn()){
     echo '<a href="upload.php">Manage files</a>';
     
     if(isset($_POST['render'])) {
-        foreach($pages as $row) {
-            $thispage = $row;
-            $ispublic = true;
-            if ($thispage['public'] != 1) $ispublic = false;
-            $secid = $thispage['section_id'];
-            $result = $pdo->prepare('SELECT * FROM sections WHERE id = ?');
-            $result->execute(array($secid));
-            $sec = $result->fetch();
-            while ( $sec['slug'] != 'root' ) {
-                $secid = $sec['parent'];
-                $result = $pdo->prepare('SELECT * FROM sections WHERE id = ?');
-                $result->execute(array($secid));
-                $sec = $result->fetch();
-                if ($sec['public'] != 1) {
-                    $ispublic = false;
-                    break;
-                }
-            }
-            if ($_POST['render'] == 'now' && is_null($thispage['deleted_on']) && $ispublic ) {
-                $rendercontent = generate_page($thispage['id']);
-                $pagepath = get_page_path($thispage['id']);
-                $renderpath = $basedir.'/'.$pagepath;
-                if (str_ends_with($renderpath, '/')) $renderpath .= 'index.html';
-                $renderpath = preg_replace('/\/+/','/',$renderpath);
-                $renderdir = preg_replace('/\/[^\/]*$/', '/', $renderpath);
-                if (!is_dir($renderdir)) mkdir($renderdir, 0755, true);
-                file_put_contents($renderpath, $rendercontent);
-                //TODO: optionally, insert in the same folder a standard .htaccess file
-                echo 'Rendered page: '.$pagepath.'</br>';
-            }
-            if ($thispage['public'] != 1) echo 'PAGE '.$thispage['id'].' IS NOT PUBLIC, cannot render.</br>';
-        }
+        if ($_POST['render'] == 'now') render_website();
         $header_redirect = 'index.php';
         if (!$debug) echo "<a href='".$header_redirect."'>Website rendered </a> <meta http-equiv='refresh' content='0; url=".$header_redirect."'>";
+    }
+    
+    if(isset($_POST['clean'])) {
+        if ($_POST['clean'] == 'now') clean_website();
+        $header_redirect = 'index.php';
+        if (!$debug) echo "<a href='".$header_redirect."'>Non public pages removed </a> <meta http-equiv='refresh' content='0; url=".$header_redirect."'>";
     }
     
     //echo '<form action="index.php" method="POST"><input type="hidden" name="render" id="pagerender" value="now"/><input type="submit" value="Render website" /></form>';

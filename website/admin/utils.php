@@ -458,16 +458,82 @@ function generate_template($pageid) {
 
 function render_website() {
     //This function renders the entire website
-    //cycle on all sections, avoid non published
-    if (is_null($page['deleted_on']) && $page['public'] == 1 ) {
-        $rendercontent = generate_page($pageid, '.');
-        $renderpath = $basedir.'/'.get_page_path($pageid);
-        if (str_ends_with($renderpath, '/')) $renderpath .= 'index.html';
-        $renderpath = preg_replace('/\/+/','/',$renderpath);
-        $renderdir = preg_replace('/\/[^\/]*$/', '/', $renderpath);
-        if (!is_dir($renderdir)) mkdir($renderdir, 0755, true);
-        file_put_contents($renderpath, $rendercontent);
-        //TODO: optionally, insert in the same folder a standard .htaccess file
+    //cycles on all sections, avoid non published
+    global $pdo;
+    global $basedir;
+    $result = $pdo->prepare('SELECT pages.id, pages.slug, pages.title, pages.public, pages.format, pages.section_id, pages.deleted_on, sections.slug as section_slug, sections.title as section_title, sections.public as section_public, pages.template_id, templates.slug as template_slug, templates.title as template_title FROM pages LEFT JOIN sections on pages.section_id = sections.id LEFT JOIN templates ON pages.template_id = templates.id WHERE pages.deleted_on IS NULL AND sections.deleted_on IS NULL');
+    $result->execute();
+    $pages = $result->fetchAll();
+    foreach($pages as $row) {
+        $thispage = $row;
+        $ispublic = true;
+        if ($thispage['public'] != 1) $ispublic = false;
+        $secid = $thispage['section_id'];
+        $result = $pdo->prepare('SELECT * FROM sections WHERE id = ?');
+        $result->execute(array($secid));
+        $sec = $result->fetch();
+        while ( $sec['slug'] != 'root' ) {
+            $secid = $sec['parent'];
+            $result = $pdo->prepare('SELECT * FROM sections WHERE id = ?');
+            $result->execute(array($secid));
+            $sec = $result->fetch();
+            if ($sec['public'] != 1) {
+                $ispublic = false;
+                break;
+            }
+        }
+        if (is_null($thispage['deleted_on']) && $ispublic) {
+            $rendercontent = generate_page($thispage['id']);
+            $pagepath = get_page_path($thispage['id']);
+            $renderpath = $basedir.'/'.$pagepath;
+            if (str_ends_with($renderpath, '/')) $renderpath .= 'index.html';
+            $renderpath = preg_replace('/\/+/','/',$renderpath);
+            $renderdir = preg_replace('/\/[^\/]*$/', '/', $renderpath);
+            if (!is_dir($renderdir)) mkdir($renderdir, 0755, true);
+            file_put_contents($renderpath, $rendercontent);
+            //TODO: optionally, insert in the same folder a standard .htaccess file
+            echo 'Rendered page: '.$pagepath.'</br>';
+        }
+        if ($thispage['public'] != 1) echo 'PAGE '.$thispage['id'].' IS NOT PUBLIC, cannot render.</br>';
+    }
+}
+
+
+function clean_website() {
+    global $pdo;
+    global $basedir;
+    //This function cycles on all sections and removes deleted and non published pages
+    $result = $pdo->prepare('SELECT pages.id, pages.slug, pages.title, pages.public, pages.format, pages.section_id, pages.deleted_on, sections.slug as section_slug, sections.title as section_title, sections.public as section_public, pages.template_id, templates.slug as template_slug, templates.title as template_title FROM pages LEFT JOIN sections on pages.section_id = sections.id LEFT JOIN templates ON pages.template_id = templates.id WHERE pages.deleted_on IS NULL AND sections.deleted_on IS NULL');
+    $result->execute();
+    $pages = $result->fetchAll();
+    foreach($pages as $row) {
+        $thispage = $row;
+        $ispublic = true;
+        if ($thispage['public'] != 1) $ispublic = false;
+        $secid = $thispage['section_id'];
+        $result = $pdo->prepare('SELECT * FROM sections WHERE id = ?');
+        $result->execute(array($secid));
+        $sec = $result->fetch();
+        while ( $sec['slug'] != 'root' ) {
+            $secid = $sec['parent'];
+            $result = $pdo->prepare('SELECT * FROM sections WHERE id = ?');
+            $result->execute(array($secid));
+            $sec = $result->fetch();
+            if ($sec['public'] != 1) {
+                $ispublic = false;
+                break;
+            }
+        }
+        if (is_null($thispage['deleted_on'])==false || $ispublic==false) {
+            $pagepath = get_page_path($thispage['id']);
+            $renderpath = $basedir.'/'.$pagepath;
+            if (str_ends_with($renderpath, '/')) $renderpath .= 'index.html';
+            $renderpath = preg_replace('/\/+/','/',$renderpath);
+            $renderdir = preg_replace('/\/[^\/]*$/', '/', $renderpath);
+            if (file_exists($renderpath)) unlink($renderpath);
+            if (is_dir($renderdir) && count(glob($renderdir."/*")) === 0) rmdir($renderdir); //Delete the directory only if empty
+            echo 'Deleted path: '.$pagepath.'</br>';
+        }
     }
 }
 
