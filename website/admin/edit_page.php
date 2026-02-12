@@ -180,7 +180,7 @@ if(isLoggedIn()){
         
         if(isset($_POST['render'])) {
             if ($_POST['render'] == 'now' && is_null($page['deleted_on']) && $page['public'] == 1 ) {
-                $rendercontent = generate_page($pageid, '/theme/');
+                $rendercontent = generate_page($pageid);
                 $renderpath = $basedir.'/'.get_page_path($pageid);
                 if (str_ends_with($renderpath, '/')) $renderpath .= 'index.html';
                 $renderpath = preg_replace('/\/+/','/',$renderpath);

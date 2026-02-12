@@ -152,7 +152,7 @@ if(isLoggedIn()){
                 }
             }
             if ($_POST['render'] == 'now' && is_null($thispage['deleted_on']) && $ispublic ) {
-                $rendercontent = generate_page($thispage['id'], '/theme/');
+                $rendercontent = generate_page($thispage['id']);
                 $pagepath = get_page_path($thispage['id']);
                 $renderpath = $basedir.'/'.$pagepath;
                 if (str_ends_with($renderpath, '/')) $renderpath .= 'index.html';

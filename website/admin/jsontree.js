@@ -58,6 +58,7 @@ function createJsonTreeDom(json, generateCopyButton = false) {
         function addCopyButton(element, json) {
           const button = appendElement(element, 'div');
           button.className = 'copy';
+          json = json.replace(/^../, "");
           button.addEventListener('click', (event) => {
             const onFail = (e) => {
               button.classList.add('not-copied');

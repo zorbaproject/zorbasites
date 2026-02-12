@@ -223,6 +223,7 @@ function mdToHTML (
     $input,
     $subtitleElemType = 'h2'  #String HTML Tag name to use for second-level headings
 ) {
+    $htmlContent = $input;
     // Convert paragraphs
     $htmlContent = preg_replace(
         '/([\S ]+)/', 
@@ -291,12 +292,12 @@ function mdToHTML (
     
     //Links and images
     $htmlContent = preg_replace(
-        '/\!\[(.*)\]\((.+)\)/', 
+        '/\!\[([^\)]*)\]\("*([^")]+)"*\)/', 
         '<img title="$1" src="$2"/>', 
         $htmlContent
     );
     $htmlContent = preg_replace(
-        '/\[(.*)\]\((.+)\)/', 
+        '/\[(.*?)\]\((.+?)\)/', 
         '<a href="$2">$1</a>', 
         $htmlContent
     );
@@ -314,7 +315,7 @@ function mdToHTML (
     );
 
     // Output HTML
-    echo $htmlContent;
+    return $htmlContent;
 }        
 
 function markdown_to_html($md) {
@@ -367,10 +368,10 @@ function include_pages($html, $pageid) {
         if (is_null($rep_content)) $rep_content = '';
         $fullcontent = str_replace($tofind, $rep_content, $fullcontent);
     }
-    preg_match_all("/\{\{ *pagepath: *([^ ]+) *\}\}/i", $fullcontent, $pages, PREG_PATTERN_ORDER);
-    //print_r($pages);
-    foreach($pages[0] as $i => $tofind) {
-        $toreplace = $pages[1][$i];
+    preg_match_all("/\{\{ *pagepath: *([^ ]+) *\}\}/i", $fullcontent, $pagepaths, PREG_PATTERN_ORDER);
+    //print_r($pagepaths);
+    foreach($pagepaths[0] as $i => $tofind) {
+        $toreplace = $pagepaths[1][$i];
         $rep_content = '';
         $find_col = 'slug';
         if (is_numeric($toreplace)) $find_col = 'id';
@@ -378,6 +379,35 @@ function include_pages($html, $pageid) {
         $result->execute(array($toreplace));
         $page = $result->fetch();
         $fullcontent = str_replace($tofind, get_page_path($page['id']), $fullcontent);
+    }
+    return $fullcontent;
+}
+
+function relative_url_fix($content) {
+    global $pdo;
+    $fullcontent = $content;
+    $allpages = array();
+    $result = $pdo->prepare('SELECT id FROM pages WHERE deleted_on IS NULL');
+    $result->execute();
+    $res = $result->fetchAll();
+    foreach($res as $row) {
+        array_push($allpages, get_page_path($row['id']));
+    }
+    $urlprefix = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+    $urlprefix = preg_replace('/\/admin\/*[^\/]*$/i', '/', $urlprefix);
+    preg_match_all('/(?:src|action|href) *= *[\'"]\K(?!http)[^\'"]*/i', $fullcontent, $urls, PREG_OFFSET_CAPTURE);
+    //print_r($urls);
+    foreach(array_reverse($urls[0]) as $i => $match) {
+        $tofind = $match[0];
+        $pos = $match[1];
+        $newlink = $urlprefix.'/theme/'.$tofind;
+        if (str_starts_with($tofind, '#')) continue;
+        if (preg_match('/^[\/\.]*upload\/.*/i', $tofind)) $newlink = preg_replace('/^\.*\/*upload\//i', $urlprefix.'/upload/', $tofind);
+        if (in_array($tofind, $allpages)) $newlink = $urlprefix.$tofind;
+        while (str_contains($newlink, '//')) {
+            $newlink = str_replace('//', '/', $newlink);
+        }
+        $fullcontent = substr($fullcontent, 0, $pos).$newlink.substr($fullcontent, $pos+strlen($tofind));
     }
     return $fullcontent;
 }
@@ -395,26 +425,26 @@ function render_template($templateid, $content = '', $pageid = -1) {
     return $fullcontent;
 }
 
-function generate_page($pageid, $urlprefix = '') {
+function generate_page($pageid) {
     global $pdo;
     
     $result = $pdo->prepare('SELECT pages.*,sections.slug as section_slug, sections.title as section_title, sections.public as section_public FROM pages LEFT JOIN sections on pages.section_id = sections.id WHERE pages.id = ?');
     $result->execute(array($pageid));
     $page = $result->fetch();
     $fullcontent = $page['content'];
-    if ($page['format']=='md') $fullcontent = markdown_to_html($page['content']);
+    if ($page['format']=='md') $fullcontent = mdToHTML($page['content']);
     if (is_null($page['template_id'])==false) {
         $fullcontent = render_template($page['template_id'], $fullcontent, $page['id']);
     } else {
         $fullcontent = include_pages($fullcontent, $pageid);
         if ($pageid > -1) $fullcontent = replace_variables($fullcontent, $pageid);
     }
-    $fullcontent = preg_replace('~(?:src|action|href)=[\'"]\K(?!http)[^\'"]*~',$urlprefix."$0",$fullcontent); //TODO: maybe check wether the file actually exists
+    $fullcontent = relative_url_fix($fullcontent);
     return $fullcontent;
 }
 
 //this is used to get a raw previes of a template
-function generate_template($pageid, $urlprefix = '') {
+function generate_template($pageid) {
     global $pdo;
     
     $result = $pdo->prepare('SELECT templates.* FROM templates WHERE templates.id = ?');
@@ -422,7 +452,7 @@ function generate_template($pageid, $urlprefix = '') {
     $page = $result->fetch();
     $fullcontent = $page['content'];
     $fullcontent = include_pages($fullcontent);
-    $fullcontent = preg_replace('~(?:src|action|href)=[\'"]\K(?!http)[^\'"]*~',$urlprefix."$0",$fullcontent); //TODO: maybe check wether the file actually exists
+    $fullcontent = relative_url_fix($fullcontent);
     return $fullcontent;
 }
 
@@ -430,7 +460,7 @@ function render_website() {
     //This function renders the entire website
     //cycle on all sections, avoid non published
     if (is_null($page['deleted_on']) && $page['public'] == 1 ) {
-        $rendercontent = generate_page($pageid, '/theme/');
+        $rendercontent = generate_page($pageid, '.');
         $renderpath = $basedir.'/'.get_page_path($pageid);
         if (str_ends_with($renderpath, '/')) $renderpath .= 'index.html';
         $renderpath = preg_replace('/\/+/','/',$renderpath);
