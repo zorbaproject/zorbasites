@@ -67,7 +67,8 @@ function createJsonTreeDom(json, generateCopyButton = false) {
               console.log('Failed to copy to clipboard: ', e);
             };
             try {
-              navigator.clipboard.writeText(JSON.stringify(json, null, '  '))
+              //navigator.clipboard.writeText(JSON.stringify(json, null, '  '))
+                navigator.clipboard.writeText(json)
                 .then(
                   () => {
                     button.classList.add('copied');

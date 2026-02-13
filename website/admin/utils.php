@@ -409,6 +409,21 @@ function relative_url_fix($content) {
         }
         $fullcontent = substr($fullcontent, 0, $pos).$newlink.substr($fullcontent, $pos+strlen($tofind));
     }
+    //This is for styles like "background-image: url('img.jpg')"
+    preg_match_all('/(?:url *\( *)[\'"]\K(?!http)[^\'"]*/i', $fullcontent, $urls, PREG_OFFSET_CAPTURE);
+    //print_r($urls);
+    foreach(array_reverse($urls[0]) as $i => $match) {
+        $tofind = $match[0];
+        $pos = $match[1];
+        $newlink = $urlprefix.'/theme/'.$tofind;
+        if (str_starts_with($tofind, '#')) continue;
+        if (preg_match('/^[\/\.]*upload\/.*/i', $tofind)) $newlink = preg_replace('/^\.*\/*upload\//i', $urlprefix.'/upload/', $tofind);
+        if (in_array($tofind, $allpages)) $newlink = $urlprefix.$tofind;
+        while (str_contains($newlink, '//')) {
+            $newlink = str_replace('//', '/', $newlink);
+        }
+        $fullcontent = substr($fullcontent, 0, $pos).$newlink.substr($fullcontent, $pos+strlen($tofind));
+    }
     return $fullcontent;
 }
 
