@@ -150,7 +150,8 @@ if(isLoggedIn()){
         }
         
         $header_redirect = 'edit_page.php?id='.$pageid;
-        if (!$debug) echo "<a href='".$header_redirect."'>Page updated, go to its details</a> <meta http-equiv='refresh' content='0; url=".$header_redirect."'>";
+        echo "<a href='".$header_redirect."'>Page updated, go to its details</a>";
+        if (!$debug) echo "<meta http-equiv='refresh' content='0; url=".$header_redirect."'>";
     }
     
     if(isset($_GET['id'])) {
@@ -198,6 +199,7 @@ if(isLoggedIn()){
         echo '<form action="edit_page.php?id='.$pageid.'" method="POST"><input type="hidden" name="render" id="pagerender" value="now"/><input type="submit" value="Render page" /></form>';
         echo '<form action="edit_page.php?id='.$pageid.'" method="POST">
         <label>Page title:</label><input type="text" name="title" id="pagetitle" value="'.$page['title'].'"/> <input type="submit" value="Save page" /> <a target="_blank" href="preview.php?page='.$pageid.'">Preview page</a> <a target="_blank" href="..'.get_page_path($pageid).'">View current version</a> </br>';
+        echo '<p>Current slug: '.$page['slug'].'</p>';
         echo '<label>Section:</label><select name="section" id="pagesection"/>';
         foreach($sections as $row) {
             $secpath = get_sections_path($row['id']);

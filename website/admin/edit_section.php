@@ -88,7 +88,16 @@ if(isLoggedIn()){
         </div>';
         echo '<input type="submit" value="Update section" /></form>';
         
-        $result = $pdo->prepare('SELECT pages.id, pages.title, pages.slug, sections.slug as section_slug, sections.title as section_title, sections.public as section_public FROM pages LEFT JOIN sections on pages.section_id = sections.id WHERE sections.id = ?');
+        $result = $pdo->prepare('SELECT pages.id, pages.title, pages.slug, sections.slug as section_slug, sections.title as section_title, sections.public as section_public FROM pages LEFT JOIN sections on pages.section_id = sections.id WHERE sections.id = ? AND pages.slug = ?  AND pages.deleted_on IS NULL');
+        $result->execute(array($section['parent'], $section['slug']));
+        $homepage = $result->fetch();
+        if ($homepage) {
+            echo '<p>Section homepage: <a href="edit_page.php?id='.$homepage['id'].'">'.$homepage['title'].'</a></p>';
+        } else {
+            echo 'This section does have a homepage: <form action="edit_page.php" method="POST"><input type="hidden" name="title" id="pagetitle" value="'.$section['title'].'"/><input type="hidden" name="section" id="pagesec" value="'.$section['parent'].'"/><input type="submit" value="Create homepage" /></form>';
+        }
+        
+        $result = $pdo->prepare('SELECT pages.id, pages.title, pages.slug, sections.slug as section_slug, sections.title as section_title, sections.public as section_public FROM pages LEFT JOIN sections on pages.section_id = sections.id WHERE sections.id = ? AND pages.deleted_on IS NULL');
         $result->execute(array($secid));
         $pages = $result->fetchAll();
         echo 'Pages in this section:';

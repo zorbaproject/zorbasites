@@ -58,28 +58,28 @@ function slug_exists($slug, $sec, $type = '', $id = -1) {
         }
         return $exists;
     }
-    //slugs must be unique between sections and pages, withthin the same parent section
+    // Pages with the same slug and path as a section will become the section's home
     $foundid = -1;
     $exists = false;
-    $result = $pdo->prepare('SELECT id FROM pages WHERE slug = ? AND section_id = ? AND deleted_on IS NULL');
+    $result = $pdo->prepare('SELECT id, section_id FROM pages WHERE slug = ? AND section_id = ? AND deleted_on IS NULL');
     $result->execute(array($slug, $sec));
     $row = $result->fetch();
     if ($row) {
         $foundid = $row['id'];
         $exists = true;
-        if ($foundid == $id && $type == 'page') {
+        if (($foundid == $id && $type == 'page') || ($sec == $row['section_id']&& $type == 'section')) {
             $exists = false;
             $foundid = -1;
         }
     }
     if ($exists == false) {
-        $result = $pdo->prepare('SELECT id FROM sections WHERE slug = ? AND parent = ? AND deleted_on IS NULL');
+        $result = $pdo->prepare('SELECT id, parent FROM sections WHERE slug = ? AND parent = ? AND deleted_on IS NULL');
         $result->execute(array($slug, $sec));
         $row = $result->fetch();
         if ($row) {
             $foundid = $row['id'];
             $exists = true;
-            if ($foundid == $id && $type == 'section') {
+            if (($foundid == $id && $type == 'section') || ( $sec == $row['parent'] && $type = 'page')) {
                 $exists = false;
             }
         }
@@ -451,7 +451,7 @@ function generate_template($pageid) {
     $result->execute(array($pageid));
     $page = $result->fetch();
     $fullcontent = $page['content'];
-    $fullcontent = include_pages($fullcontent);
+    $fullcontent = include_pages($fullcontent, -1);
     $fullcontent = relative_url_fix($fullcontent);
     return $fullcontent;
 }

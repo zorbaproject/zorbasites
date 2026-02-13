@@ -65,7 +65,8 @@ if(isLoggedIn()){
                     }
                     if (!$allowed) continue;
                     $today = strtotime("now");
-                    $destdir = $uploadfolder.$current_path;
+		    $destdir = $uploadfolder.$current_path;
+		    while (str_contains($destdir, '//')) $destdir = str_replace('//', '/', $destdir);
                     if ($destdir == $uploadfolder) $destdir = $uploadfolder.date("Y",$today).'/'.date("m",$today);
                     if (!is_dir($destdir)) mkdir($destdir, 0755, true);
                     $i = 2;
@@ -102,6 +103,7 @@ if(isLoggedIn()){
     }
     echo '<input type="submit" value="Delete selected" />';
     echo '</ul>';
+    echo '</form>';
     
     echo 'Upload files:<br />
     <form action="upload.php?path='.$pathstr.'" method="post" enctype="multipart/form-data">
