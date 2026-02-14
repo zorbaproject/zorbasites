@@ -15,13 +15,9 @@ $protected_pages = [ $admin_location, "maintenance", "theme", "index" ]; //These
 $pdo = null;
 if ($installed) $pdo = new \PDO("sqlite:$db");
 
-if (version_compare(phpversion(), '8.0.0') >= 0) {
-    require 'vendor/autoload.php';
-} else {
+if (version_compare(phpversion(), '8.0.0') < 0) {
     require 'php7_support.php';
 }
-//use FastVolt\Helper\Markdown;
-
 
 function sql_clean($text) {
     $clean = str_replace("\n","",$text);
@@ -215,7 +211,7 @@ function replace_variables($text, $pageid) {
         '/\{\{ *section\.title *\}\}/i' => $section['title']
     );
     foreach($variables as $search => $replace) {
-        $replaced = preg_replace($search, $replace, $replaced);
+        if ($replace != '') $replaced = preg_replace($search, $replace, $replaced);
     }
     return $replaced;
 }
@@ -318,18 +314,6 @@ function mdToHTML (
 
     // Output HTML
     return $htmlContent;
-}        
-
-function markdown_to_html($md) {
-    $html = $md;
-    if(class_exists('FastVolt\Helper\Markdown')) {
-        $markdown = new FastVolt\Helper\Markdown(); // or Markdown::new()
-        $markdown->setContent($md);
-        $html = $markdown->getHtml();
-    } else {
-        $html = mdToHTML($md);
-    }
-    return $html;
 }
 
 function include_pages($html, $pageid) {
