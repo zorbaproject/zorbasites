@@ -122,7 +122,7 @@
                           </h6>';
                       }
                       echo '<ul class="nav flex-column mb-2">';
-                      $result = $pdo->prepare('SELECT pages.id, pages.title, pages.slug, sections.slug as section_slug, sections.title as section_title, sections.public as section_public FROM pages LEFT JOIN sections on pages.section_id = sections.id WHERE sections.id = ? ORDER BY pages.id');
+                      $result = $pdo->prepare('SELECT pages.id, pages.title, pages.slug, sections.slug as section_slug, sections.title as section_title, sections.public as section_public FROM pages LEFT JOIN sections on pages.section_id = sections.id WHERE sections.id = ? AND pages.deleted_on IS NULL ORDER BY pages.id');
                       $result->execute(array($sec['id']));
                       $barpages = $result->fetchAll();
                       foreach($barpages as $pg) {

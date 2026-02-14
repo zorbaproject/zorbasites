@@ -518,7 +518,7 @@ function clean_website() {
     global $pdo;
     global $basedir;
     //This function cycles on all sections and removes deleted and non published pages
-    $result = $pdo->prepare('SELECT pages.id, pages.slug, pages.title, pages.public, pages.format, pages.section_id, pages.deleted_on, sections.slug as section_slug, sections.title as section_title, sections.public as section_public, pages.template_id, templates.slug as template_slug, templates.title as template_title FROM pages LEFT JOIN sections on pages.section_id = sections.id LEFT JOIN templates ON pages.template_id = templates.id WHERE pages.deleted_on IS NULL AND sections.deleted_on IS NULL');
+    $result = $pdo->prepare('SELECT pages.id, pages.slug, pages.title, pages.public, pages.format, pages.section_id, pages.deleted_on, sections.slug as section_slug, sections.title as section_title, sections.public as section_public, pages.template_id, templates.slug as template_slug, templates.title as template_title FROM pages LEFT JOIN sections on pages.section_id = sections.id LEFT JOIN templates ON pages.template_id = templates.id');
     $result->execute();
     $pages = $result->fetchAll();
     foreach($pages as $row) {
@@ -529,12 +529,13 @@ function clean_website() {
         $result = $pdo->prepare('SELECT * FROM sections WHERE id = ?');
         $result->execute(array($secid));
         $sec = $result->fetch();
+        if ($sec['public'] != 1 || is_null($sec['deleted_on'])==false) $ispublic = false;
         while ( $sec['slug'] != 'root' ) {
             $secid = $sec['parent'];
             $result = $pdo->prepare('SELECT * FROM sections WHERE id = ?');
             $result->execute(array($secid));
             $sec = $result->fetch();
-            if ($sec['public'] != 1) {
+            if ($sec['public'] != 1 || is_null($sec['deleted_on'])==false) {
                 $ispublic = false;
                 break;
             }

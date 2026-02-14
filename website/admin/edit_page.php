@@ -171,6 +171,12 @@ if(isLoggedIn()){
         $page = $result->fetch();
         
         if(isset($_POST['deleted_on'])) {
+            if ($_POST['deleted_on'] == 'not') {
+                $updqry = $pdo->prepare('UPDATE pages SET deleted_on = NULL WHERE id = ?');
+                $updqry->execute(array($pageid));
+                $header_redirect = 'edit_page.php?id='.$pageid;
+                if (!$debug) echo "<a href='".$header_redirect."'>Page undeleted, go back to its details </a> <meta http-equiv='refresh' content='0; url=".$header_redirect."'>";
+            }
             if ($_POST['deleted_on'] == 'now' && in_array($page['slug'], $protected_pages) == false ) {
                 $updqry = $pdo->prepare('UPDATE pages SET deleted_on = CURRENT_TIMESTAMP WHERE id = ?');
                 $updqry->execute(array($pageid));
@@ -195,10 +201,18 @@ if(isLoggedIn()){
         
         echo '<h1>'.$page['title'].'</h1>';
         //print_r($page);
-        echo '<form action="edit_page.php?id='.$pageid.'" method="POST"><input type="hidden" name="deleted_on" id="pagedel" value="now"/><input type="submit" value="Delete page" /></form>';
-        echo '<form action="edit_page.php?id='.$pageid.'" method="POST"><input type="hidden" name="render" id="pagerender" value="now"/><input type="submit" value="Render page" /></form>';
-        echo '<form action="edit_page.php?id='.$pageid.'" method="POST">
-        <label>Page title:</label><input type="text" name="title" id="pagetitle" value="'.$page['title'].'"/> <input type="submit" value="Save page" /> <a target="_blank" href="preview.php?page='.$pageid.'">Preview page</a> <a target="_blank" href="..'.get_page_path($pageid).'">View current version</a> </br>';
+        if (is_null($page['deleted_on'])) {
+            echo '<span><form action="edit_page.php?id='.$pageid.'" method="POST" style="display:inline"><input type="hidden" name="deleted_on" id="pagedel" value="now"/><button type="submit" class="btn btn-danger me-2"/><i class="bi bi-trash-fill"></i>Delete page</button></form></span>';
+        } else {
+            echo '<span><form action="edit_page.php?id='.$pageid.'" method="POST" style="display:inline"><input type="hidden" name="deleted_on" id="pagedel" value="not"/><button type="submit" class="btn btn-danger me-2"/><i class="bi bi-trash"></i>Undelete page</button></form></span>';
+        }
+        echo '<span><form action="edit_page.php?id='.$pageid.'" method="POST" style="display:inline"><input type="hidden" name="render" id="pagerender" value="now"/><button type="submit" class="btn btn-success me-2"/><i class="bi bi-save2-fill"></i>Render page</button></form></span>';
+        echo '<div class="mb-2"></div>';
+        echo '<form action="edit_page.php?id='.$pageid.'" method="POST">';
+        echo '<button type="submit" class="btn btn-success me-2" ><i class="bi bi-floppy-fill"></i>Save page</button>';
+        echo '<a target="_blank" href="preview.php?page='.$pageid.'"><button type="button" class="btn btn-warning me-2"><i class="bi bi-easel2-fill"></i>Preview page</button></a>'; 
+        echo '<a target="_blank" href="..'.get_page_path($pageid).'"><button type="button" class="btn btn-primary me-2"><i class="bi bi-eye-fill"></i>View current version</button></a> </br>';
+        echo '</br><label>Page title:</label><input type="text" name="title" id="pagetitle" value="'.$page['title'].'"/>';
         echo '<p>Current slug: '.$page['slug'].'</p>';
         echo '<label>Section:</label><select name="section" id="pagesection"/>';
         foreach($sections as $row) {

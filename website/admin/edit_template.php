@@ -100,9 +100,12 @@ if(isLoggedIn()){
         
         echo '<h1>'.$template['title'].'</h1>';
         //print_r($template);
-        echo '<form action="edit_template.php?id='.$templateid.'" method="POST"><input type="hidden" name="deleted_on" id="pagedel" value="now"/><input type="submit" value="Delete template" /></form>';
-        echo '<form action="edit_template.php?id='.$templateid.'" method="POST">
-        <label>Page title:</label><input type="text" name="title" id="pagetitle" value="'.$template['title'].'"/> <input type="submit" value="Save template" /> <a href="preview.php?template='.$templateid.'">Preview template</a> </br>';
+        echo '<span><form action="edit_template.php?id='.$templateid.'" method="POST" style="display:inline"><input type="hidden" name="deleted_on" id="pagedel" value="now"/><button type="submit" class="btn btn-danger me-2"/><i class="bi bi-trash-fill"></i>Delete template</button></form></span>';
+        echo '<div class="mb-2"></div>';
+        echo '<form action="edit_template.php?id='.$templateid.'" method="POST">';
+        echo '<button type="submit" class="btn btn-success me-2" ><i class="bi bi-floppy-fill"></i>Save template</button>';
+        echo '<a target="_blank" href="preview.php?template='.$templateid.'"><button type="button" class="btn btn-warning me-2"><i class="bi bi-easel2-fill"></i>Preview template</button></a></br>';
+        echo '</br><label>Page title:</label><input type="text" name="title" id="pagetitle" value="'.$template['title'].'"/>';
         
         echo '<label>Copy content from existing page:</label><select name="from" id="pagefrom"/>';
         echo '<option value="">---</option>';

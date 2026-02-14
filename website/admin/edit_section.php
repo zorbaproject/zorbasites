@@ -86,15 +86,17 @@ if(isLoggedIn()){
         <input class="form-check-input" type="checkbox" role="switch" id="secpublic" name="public" '.$ispublic.'>
         <label class="form-check-label" for="secpublic">Public</label>
         </div>';
-        echo '<input type="submit" value="Update section" /></form>';
+        echo '<button type="submit" class="btn btn-success me-2" ><i class="bi bi-floppy-fill"></i>Update section</button></form>';
         
         $result = $pdo->prepare('SELECT pages.id, pages.title, pages.slug, sections.slug as section_slug, sections.title as section_title, sections.public as section_public FROM pages LEFT JOIN sections on pages.section_id = sections.id WHERE sections.id = ? AND pages.slug = ?  AND pages.deleted_on IS NULL');
         $result->execute(array($section['parent'], $section['slug']));
         $homepage = $result->fetch();
         if ($homepage) {
             echo '<p>Section homepage: <a href="edit_page.php?id='.$homepage['id'].'">'.$homepage['title'].'</a></p>';
+        } else if ($section['slug'] == 'root') {
+            echo '<p>Section homepage: <a href="edit_page.php?id=1">Index</a></p>';
         } else {
-            echo 'This section does have a homepage: <form action="edit_page.php" method="POST"><input type="hidden" name="title" id="pagetitle" value="'.$section['title'].'"/><input type="hidden" name="section" id="pagesec" value="'.$section['parent'].'"/><input type="submit" value="Create homepage" /></form>';
+            echo 'This section does not have a homepage: <form action="edit_page.php" method="POST"><input type="hidden" name="title" id="pagetitle" value="'.$section['title'].'"/><input type="hidden" name="section" id="pagesec" value="'.$section['parent'].'"/><button type="submit" class="btn btn-success me-2" >Create homepage</button></form>';
         }
         
         $result = $pdo->prepare('SELECT pages.id, pages.title, pages.slug, sections.slug as section_slug, sections.title as section_title, sections.public as section_public FROM pages LEFT JOIN sections on pages.section_id = sections.id WHERE sections.id = ? AND pages.deleted_on IS NULL');
