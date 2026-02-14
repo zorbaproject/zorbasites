@@ -209,6 +209,8 @@ function replace_variables($text, $pageid) {
     $variables = array(
         '/\{\{ *page\.title *\}\}/i' => $page['title'],
         '/\{\{ *page\.slug *\}\}/i' => $page['slug'],
+        '/\{\{ *page\.subtitle *\}\}/i' => $page['subtitle'],
+        '/\{\{ *page\.credits *\}\}/i' => $page['credits'],
         '/\{\{ *page\.path *\}\}/i' => get_page_path($page['id']),
         '/\{\{ *section\.title *\}\}/i' => $section['title']
     );

@@ -105,7 +105,7 @@ if(isLoggedIn()){
         echo '<form action="edit_template.php?id='.$templateid.'" method="POST">';
         echo '<button type="submit" class="btn btn-success me-2" ><i class="bi bi-floppy-fill"></i>Save template</button>';
         echo '<a target="_blank" href="preview.php?template='.$templateid.'"><button type="button" class="btn btn-warning me-2"><i class="bi bi-easel2-fill"></i>Preview template</button></a></br>';
-        echo '</br><label>Page title:</label><input type="text" name="title" id="pagetitle" value="'.$template['title'].'"/>';
+        echo '</br><label>Template title:</label><input type="text" name="title" id="pagetitle" value="'.$template['title'].'"/>';
         
         echo '<label>Copy content from existing page:</label><select name="from" id="pagefrom"/>';
         echo '<option value="">---</option>';

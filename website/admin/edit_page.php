@@ -12,6 +12,8 @@ if(isLoggedIn()){
     include("header.php");
     if(isset($_POST['title'])&&isset($_POST['section'])) {
         $pagetitle = $_POST['title'];
+        $pagesubtitle = $_POST['subtitle'];
+        $pagecredits = $_POST['credits'];
         $pagesection = $_POST['section'];
         $pageslug = slugify($pagetitle);
         $pagepublic = 0;
@@ -37,11 +39,11 @@ if(isLoggedIn()){
                 $s++;
             }
             if (in_array($currentslug, $protected_pages)) {
-                $updqry = $pdo->prepare('UPDATE pages SET title = ?, public = ?, format = ? WHERE id = ?');
-                $updqry->execute(array($pagetitle, $pagepublic, $pageformat, $pageid));
+                $updqry = $pdo->prepare('UPDATE pages SET title = ?, subtitle = ?, credits = ?, public = ?, format = ? WHERE id = ?');
+                $updqry->execute(array($pagetitle, $pagesubtitle, $pagecredits, $pagepublic, $pageformat, $pageid));
             } else {
-                $updqry = $pdo->prepare('UPDATE pages SET title = ?, slug = ?, section_id = ?, public = ?, format = ? WHERE id = ?');
-                $updqry->execute(array($pagetitle, $pageslug, $pagesection, $pagepublic, $pageformat, $pageid));
+                $updqry = $pdo->prepare('UPDATE pages SET title = ?, subtitle = ?, credits = ?, slug = ?, section_id = ?, public = ?, format = ? WHERE id = ?');
+                $updqry->execute(array($pagetitle, $pagesubtitle, $pagecredits, $pageslug, $pagesection, $pagepublic, $pageformat, $pageid));
             }
             
             if(isset($_POST['template'])) {
@@ -98,8 +100,8 @@ if(isLoggedIn()){
                 $pageslug = $origslug.'-'.$s;
                 $s++;
             }
-            $insqry = $pdo->prepare('INSERT INTO pages (title, slug, section_id) VALUES ( ?, ?, ? ) ');
-            $insqry->execute(array($pagetitle, $pageslug, $pagesection));
+            $insqry = $pdo->prepare('INSERT INTO pages (title, slug, subtitle, credits, section_id) VALUES ( ?, ?, ?, ?, ? ) ');
+            $insqry->execute(array($pagetitle, $pageslug, $pagesubtitle, $pagecredits, $pagesection));
             $result = $pdo->prepare('SELECT id FROM pages WHERE slug = ? AND section_id = ?');
             $result->execute(array($pageslug, $pagesection));
             $row = $result->fetch();
@@ -214,6 +216,8 @@ if(isLoggedIn()){
         echo '<a target="_blank" href="..'.get_page_path($pageid).'"><button type="button" class="btn btn-primary me-2"><i class="bi bi-eye-fill"></i>View current version</button></a> </br>';
         echo '</br><label>Page title:</label><input type="text" name="title" id="pagetitle" value="'.$page['title'].'"/>';
         echo '<p>Current slug: '.$page['slug'].'</p>';
+        echo '</br><label>Page subtitle:</label><input type="text" name="subtitle" id="pagesubtitle" value="'.$page['subtitle'].'"/>';
+        echo '</br><label>Page credits:</label><input type="text" name="credits" id="pagecredits" value="'.$page['credits'].'"/>';
         echo '<label>Section:</label><select name="section" id="pagesection"/>';
         foreach($sections as $row) {
             $secpath = get_sections_path($row['id']);
@@ -234,7 +238,9 @@ if(isLoggedIn()){
             if ($row['id'] == $page['template_id']) $issel = 'selected';
             echo '<option value="'.$row['id'].'" '.$issel.'>'.$row['title'].'</option>';
         }
-        echo '</select></br>';
+        echo '</select>';
+        if (is_null($page['template_id'])==false) echo '<a href="edit_template.php?id='.$page['template_id'].'">Edit current template</a>';
+        echo '</br>';
         echo '<label>Copy content from existing page:</label><select name="from" id="pagefrom"/>';
         echo '<option value="">---</option>';
         $src_pages = list_src_pages();

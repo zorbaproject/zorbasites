@@ -69,6 +69,8 @@ if ($installed) {
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             slug  VARCHAR (255) NOT NULL,
             title  VARCHAR (255),
+            subtitle TEXT,
+            credits TEXT,
             format  VARCHAR (10) NOT NULL DEFAULT "html",
             template_id INTEGER,
             section_id INTEGER NOT NULL DEFAULT 1,
