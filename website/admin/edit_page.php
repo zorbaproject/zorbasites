@@ -12,8 +12,10 @@ if(isLoggedIn()){
     include("header.php");
     if(isset($_POST['title'])&&isset($_POST['section'])) {
         $pagetitle = $_POST['title'];
-        $pagesubtitle = $_POST['subtitle'];
-        $pagecredits = $_POST['credits'];
+        $pagecredits = "";
+        $pagesubtitle = "";
+        if(isset($_POST['subtitle'])) $pagesubtitle = $_POST['subtitle'];
+        if(isset($_POST['credits'])) $pagecredits = $_POST['credits'];
         $pagesection = $_POST['section'];
         $pageslug = slugify($pagetitle);
         $pagepublic = 0;
@@ -23,6 +25,14 @@ if(isLoggedIn()){
         $pageformat = 'html';
         if(isset($_POST['format'])) {
             if ($_POST['format'] == 'md') $pageformat = 'md';
+        }
+        $pageonlysource = 0;
+        if(isset($_POST['onlysource'])) {
+            if ($_POST['onlysource'] != 0) $pageonlysource = 1;
+        }
+        $pagemetadata = array();
+        if(isset($_POST['metadata'])) {
+            $pagemetadata = json_decode($_POST['metadata']);
         }
         
         if(isset($_GET['id'])) {
@@ -39,11 +49,11 @@ if(isLoggedIn()){
                 $s++;
             }
             if (in_array($currentslug, $protected_pages)) {
-                $updqry = $pdo->prepare('UPDATE pages SET title = ?, subtitle = ?, credits = ?, public = ?, format = ? WHERE id = ?');
-                $updqry->execute(array($pagetitle, $pagesubtitle, $pagecredits, $pagepublic, $pageformat, $pageid));
+                $updqry = $pdo->prepare('UPDATE pages SET title = ?, subtitle = ?, credits = ?, public = ?, onlysource = ?, format = ? WHERE id = ?');
+                $updqry->execute(array($pagetitle, $pagesubtitle, $pagecredits, $pagepublic, $pageonlysource, $pageformat, $pageid));
             } else {
-                $updqry = $pdo->prepare('UPDATE pages SET title = ?, subtitle = ?, credits = ?, slug = ?, section_id = ?, public = ?, format = ? WHERE id = ?');
-                $updqry->execute(array($pagetitle, $pagesubtitle, $pagecredits, $pageslug, $pagesection, $pagepublic, $pageformat, $pageid));
+                $updqry = $pdo->prepare('UPDATE pages SET title = ?, subtitle = ?, credits = ?, slug = ?, section_id = ?, public = ?, onlysource = ?, format = ? WHERE id = ?');
+                $updqry->execute(array($pagetitle, $pagesubtitle, $pagecredits, $pageslug, $pagesection, $pagepublic, $pageonlysource, $pageformat, $pageid));
             }
             
             if(isset($_POST['template'])) {
@@ -261,7 +271,13 @@ if(isLoggedIn()){
         <label class="form-check-label" for="pagepublic">Public</label>
         </div>';
         if ($page['format'] == 'html') {
-            if (is_null($page['template_id'])) {
+            $isonlysource = 'checked';
+            if ($page['onlysource'] == 0) $isonlysource = '';
+            echo '<div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" role="switch" id="pageonlysource" value="1" name="onlysource" '.$isonlysource.'>
+            <label class="form-check-label" for="pageonlysource">Edit only as source code</label>
+            </div>';
+            if (is_null($page['template_id']) || $isonlysource == "checked") {
                 //echo '<div class="border border-primary"><textarea id="editor" name="content" >'.$page['content'].'</textarea></div>';
                 echo '<div class="border border-primary"><textarea id="editor" name="content" >'.htmlspecialchars($page['content']).'</textarea></div>';
                 echo '<script>

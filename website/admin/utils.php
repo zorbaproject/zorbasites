@@ -211,7 +211,8 @@ function replace_variables($text, $pageid) {
         '/\{\{ *section\.title *\}\}/i' => $section['title']
     );
     foreach($variables as $search => $replace) {
-        if ($replace != '') $replaced = preg_replace($search, $replace, $replaced);
+        if (is_null($replace)) $replace = '';
+        $replaced = preg_replace($search, $replace, $replaced);
     }
     return $replaced;
 }

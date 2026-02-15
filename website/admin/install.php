@@ -76,6 +76,8 @@ if ($installed) {
             section_id INTEGER NOT NULL DEFAULT 1,
             content  TEXT,
             public INTEGER NOT NULL DEFAULT 0,
+            onlysource INTEGER NOT NULL DEFAULT 0,
+            metadata TEXT,
             deleted_on TEXT,
             CONSTRAINT "section_id" FOREIGN KEY ("section_id") REFERENCES "section" ("ID") ON DELETE CASCADE ON UPDATE CASCADE,
             CONSTRAINT "template_id" FOREIGN KEY ("template_id") REFERENCES "templates" ("ID") ON DELETE CASCADE ON UPDATE CASCADE

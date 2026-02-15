@@ -20,7 +20,7 @@ if(isLoggedIn()){
         $secpublic = 0;
         if(isset($_POST['public'])) {
             $secpublic = $_POST['public'];
-            if ($secpublic != 0) {
+            if ($secpublic == "on") {
                 $secpublic = 1;
             }
         }
