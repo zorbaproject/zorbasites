@@ -211,6 +211,23 @@ if(isLoggedIn()){
             if ($page['public'] != 1) echo 'PAGE IS NOT PUBLIC, cannot render.';
         }
         
+        if(isset($_POST['maintenance'])) {
+            if ($_POST['maintenance'] == 'now' && is_null($page['deleted_on']) ) {
+                $result = $pdo->prepare('SELECT pages.id, pages.content FROM pages WHERE section_id = 1 AND slug = "maintenance" LIMIT 1;');
+                $result->execute(array());
+                $maintenancepage = $result->fetch();
+                $maintenanceid = $maintenancepage['id'];
+                $rendercontent = generate_page($maintenanceid);
+                $renderpath = $basedir.'/'.get_page_path($pageid);
+                if (str_ends_with($renderpath, '/')) $renderpath .= 'index.html';
+                $renderpath = preg_replace('/\/+/','/',$renderpath);
+                $renderdir = preg_replace('/\/[^\/]*$/', '/', $renderpath);
+                if (!is_dir($renderdir)) mkdir($renderdir, 0755, true);
+                file_put_contents($renderpath, $rendercontent);
+            }
+            if ($page['public'] != 1) echo 'PAGE IS NOT PUBLIC, cannot render.';
+        }
+        
         echo '<h1>'.$page['title'].'</h1>';
         //print_r($page);
         if (is_null($page['deleted_on'])) {
@@ -218,6 +235,7 @@ if(isLoggedIn()){
         } else {
             echo '<span><form action="edit_page.php?id='.$pageid.'" method="POST" style="display:inline"><input type="hidden" name="deleted_on" id="pagedel" value="not"/><button type="submit" class="btn btn-danger me-2"/><i class="bi bi-trash"></i>Undelete page</button></form></span>';
         }
+        echo '<span><form action="edit_page.php?id='.$pageid.'" method="POST" style="display:inline"><input type="hidden" name="maintenance" id="pagemaintenance" value="now"/><button type="submit" class="btn btn-secondary me-2"/><i class="bi bi-cone-striped"></i>Set in maintenance</button></form></span>';
         echo '<span><form action="edit_page.php?id='.$pageid.'" method="POST" style="display:inline"><input type="hidden" name="render" id="pagerender" value="now"/><button type="submit" class="btn btn-success me-2"/><i class="bi bi-save2-fill"></i>Render page</button></form></span>';
         echo '<div class="mb-2"></div>';
         echo '<form action="edit_page.php?id='.$pageid.'" method="POST">';
