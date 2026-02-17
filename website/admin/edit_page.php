@@ -110,9 +110,9 @@ if(isLoggedIn()){
                 $pageslug = $origslug.'-'.$s;
                 $s++;
             }
-            $insqry = $pdo->prepare('INSERT INTO pages (title, slug, subtitle, credits, section_id) VALUES ( ?, ?, ?, ?, ? ) ');
-            $insqry->execute(array($pagetitle, $pageslug, $pagesubtitle, $pagecredits, $pagesection));
-            $result = $pdo->prepare('SELECT id FROM pages WHERE slug = ? AND section_id = ?');
+            $insqry = $pdo->prepare('INSERT INTO pages (title, slug, subtitle, credits, section_id, format) VALUES ( ?, ?, ?, ?, ?, ? ) ');
+            $insqry->execute(array($pagetitle, $pageslug, $pagesubtitle, $pagecredits, $pagesection, $pageformat));
+            $result = $pdo->prepare('SELECT id FROM pages WHERE slug = ? AND section_id = ? AND deleted_on IS NULL');
             $result->execute(array($pageslug, $pagesection));
             $row = $result->fetch();
             $pageid = $row['id'];

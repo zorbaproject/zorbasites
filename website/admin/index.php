@@ -122,7 +122,7 @@ if(isLoggedIn()){
     echo '</select>';
     $ismd = '';
     echo '<!--div class="form-check form-switch"-->
-    <input class="form-check-input" type="checkbox" role="switch" id="pageformat" value="markdown" name="format" '.$ismd.'>
+    <input class="form-check-input" type="checkbox" role="switch" id="pageformat" value="md" name="format" '.$ismd.'>
     <label class="form-check-label" for="secpublic">Markdown</label>
     <!--/div-->';
     echo '<input type="submit" value="Create new page" /></form>';
