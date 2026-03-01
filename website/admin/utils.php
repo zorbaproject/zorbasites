@@ -367,6 +367,18 @@ function include_pages($html, $pageid) {
         $page = $result->fetch();
         $fullcontent = str_replace($tofind, get_page_path($page['id']), $fullcontent);
     }
+    preg_match_all("/\{\{ *pagetitle: *([^ ]+) *\}\}/i", $fullcontent, $pagepaths, PREG_PATTERN_ORDER);
+    //print_r($pagepaths);
+    foreach($pagepaths[0] as $i => $tofind) {
+        $toreplace = $pagepaths[1][$i];
+        $rep_content = '';
+        $find_col = 'slug';
+        if (is_numeric($toreplace)) $find_col = 'id';
+        $result = $pdo->prepare('SELECT pages.id, pages.title, pages.content FROM pages LEFT JOIN sections on pages.section_id = sections.id WHERE pages.'.$find_col.' = ? AND pages.deleted_on IS NULL AND sections.deleted_on IS NULL');
+        $result->execute(array($toreplace));
+        $page = $result->fetch();
+        $fullcontent = str_replace($tofind, $page['title'], $fullcontent);
+    }
     return $fullcontent;
 }
 
