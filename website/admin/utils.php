@@ -220,7 +220,7 @@ function replace_variables($text, $pageid) {
 //Thanks to https://www.linkedin.com/pulse/write-simple-php-script-convert-md-html-callan-milne-bqwuc
 function mdToHTML (
     $input,
-    $subtitleElemType = 'h2'  #String HTML Tag name to use for second-level headings
+    $subtitleElemType = 'h'  #String HTML Tag name to use for second-level headings
 ) {
     $htmlContent = $input;
     // Convert paragraphs
@@ -231,15 +231,67 @@ function mdToHTML (
     );
   
     // Convert headings
+    $subtitleElemTypeNum = $subtitleElemType.'6';
+    $htmlContent = preg_replace(
+        '/<p>###### ([\S ]+)<\/p>/', 
+        sprintf(
+            '<%s>$1</%s>',
+            $subtitleElemTypeNum,
+            $subtitleElemTypeNum
+        ),
+        $htmlContent
+    );
+    $subtitleElemTypeNum = $subtitleElemType.'5';
+    $htmlContent = preg_replace(
+        '/<p>##### ([\S ]+)<\/p>/', 
+        sprintf(
+            '<%s>$1</%s>',
+            $subtitleElemTypeNum,
+            $subtitleElemTypeNum
+        ),
+        $htmlContent
+    );
+    $subtitleElemTypeNum = $subtitleElemType.'4';
+    $htmlContent = preg_replace(
+        '/<p>#### ([\S ]+)<\/p>/', 
+        sprintf(
+            '<%s>$1</%s>',
+            $subtitleElemTypeNum,
+            $subtitleElemTypeNum
+        ),
+        $htmlContent
+    );
+    $subtitleElemTypeNum = $subtitleElemType.'3';
+    $htmlContent = preg_replace(
+        '/<p>### ([\S ]+)<\/p>/', 
+        sprintf(
+            '<%s>$1</%s>',
+            $subtitleElemTypeNum,
+            $subtitleElemTypeNum
+        ),
+        $htmlContent
+    );
+    $subtitleElemTypeNum = $subtitleElemType.'2';
     $htmlContent = preg_replace(
         '/<p>## ([\S ]+)<\/p>/', 
         sprintf(
             '<%s>$1</%s>',
-            $subtitleElemType,
-            $subtitleElemType
+            $subtitleElemTypeNum,
+            $subtitleElemTypeNum
         ),
         $htmlContent
     );
+    $subtitleElemTypeNum = $subtitleElemType.'1';
+    $htmlContent = preg_replace(
+        '/<p># ([\S ]+)<\/p>/', 
+        sprintf(
+            '<%s>$1</%s>',
+            $subtitleElemTypeNum,
+            $subtitleElemTypeNum
+        ),
+        $htmlContent
+    );
+
   
     // Convert lists
     $htmlContent = preg_replace(
