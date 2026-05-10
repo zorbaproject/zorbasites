@@ -96,9 +96,13 @@ if(isLoggedIn()){
         if (is_array($fullname)) {
             echo '<li class="list-group-item"><i class="bi bi-folder2"></i><a href ="upload.php?path='.$current_path.$key.'">'.$key.'</a></li>';
         } else {
+            $preview = '';
+            if (str_ends_with(strtolower($key), '.jpg') || str_ends_with(strtolower($key), '.jpeg' || str_ends_with(strtolower($key), '.png' || str_ends_with(strtolower($key), '.gif')))) {
+                $preview = '<img src="../upload/'.$fullname.'" height="64px" />';
+            }
             echo '<li class="list-group-item">
             <input type="checkbox" name="todelete[]" value="'.$fullname.'">
-            <i class="bi bi-file-earmark"></i><a target="_blank" href="../upload/'.$fullname.'">'.$key.'</a></li>';
+            <i class="bi bi-file-earmark"></i><a target="_blank" href="../upload/'.$fullname.'">'.$key.$preview.'</a></li>';
         }
     }
     echo '<input type="submit" value="Delete selected" />';
