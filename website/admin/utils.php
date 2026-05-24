@@ -342,16 +342,58 @@ function mdToHTML (
     );
     
     //Links and images
-    $htmlContent = preg_replace(
+    /*$htmlContent = preg_replace(
         '/\!\[([^\)]*)\]\("*([^")]+)"*\)/', 
         '<img title="$1" src="$2"/>', 
         $htmlContent
-    );
-    $htmlContent = preg_replace(
+    );*/
+    preg_match_all('/\!\[([^\)]*)\]\("*([^")]+)"*\)/i', $htmlContent, $images, PREG_PATTERN_ORDER);
+    foreach($images[0] as $i => $tofind) {
+        $imgtitle = $images[1][$i];
+        $imgdata = explode('|', $images[2][$i]);
+        $imgurl = $imgdata[0];
+        $imglink = false;
+        $imgwidth = '';
+        $imgheight = '';
+        if (count($imgdata) > 1) {
+            if (in_array("link", $imgdata)) $imglink = true;
+            foreach($imgdata as $d => $tmpdata) {
+                if (str_starts_with($tmpdata, 'width=')) {
+                    $tmpnum = explode('=', $tmpdata)[1];
+                    $imgwidth = 'width="'.$tmpnum.'"';
+                }
+                if (str_starts_with($tmpdata, 'height=')) {
+                    $tmpnum = explode('=', $tmpdata)[1];
+                    $imgheight = 'height="'.$tmpnum.'"';
+                }
+            }
+        }
+        $imghtml = '<img title="'.$imgtitle.'" '.$imgwidth.' '.$imgheight.' src="'.$imgurl.'"/>';
+        if ($imglink) $imghtml = '<a href="'.$imgurl.'" target="_blank">'.$imghtml.'</a>';
+        $htmlContent = str_replace($tofind, $imghtml, $htmlContent);
+    }
+    /*$htmlContent = preg_replace(
         '/\[(.*?)\]\((.+?)\)/', 
         '<a href="$2">$1</a>', 
         $htmlContent
-    );
+    );*/
+    preg_match_all('/\[(.*?)\]\((.+?)\)/i', $htmlContent, $links, PREG_PATTERN_ORDER);
+    foreach($links[0] as $i => $tofind) {
+        $linktext = $links[1][$i];
+        $linkdata = explode('|', $links[2][$i]);
+        $linkurl = $linkdata[0];
+        $linktarget = '';
+        if (count($linkdata) > 1) {
+            foreach($linkdata as $d => $tmpdata) {
+                if (str_starts_with($tmpdata, 'target=')) {
+                    $tmptxt = explode('=', $tmpdata)[1];
+                    $linktarget = 'target="'.$tmptxt.'"';
+                }
+            }
+        }
+        $urlhtml =  '<a href="'.$linkurl.'" '.$linktarget.'>'.$linktext.'</a>';
+        $htmlContent = str_replace($tofind, $urlhtml, $htmlContent);
+    }
     
     //Quote
     $htmlContent = preg_replace(
