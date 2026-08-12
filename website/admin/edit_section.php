@@ -65,6 +65,21 @@ if(isLoggedIn()){
         $result->execute();
         $sections = $result->fetchAll();
         
+        if(isset($_POST['deleted_on'])) {
+            if ($_POST['deleted_on'] == 'not') {
+                $updqry = $pdo->prepare('UPDATE sections SET deleted_on = NULL WHERE id = ?');
+                $updqry->execute(array($secid));
+                $header_redirect = 'edit_section.php?id='.$secid;
+                if (!$debug) echo "<a href='".$header_redirect."'>Section undeleted, go back to its details </a> <meta http-equiv='refresh' content='0; url=".$header_redirect."'>";
+            }
+            if ($_POST['deleted_on'] == 'now' && $secid != 1 ) {
+                $updqry = $pdo->prepare('UPDATE sections SET deleted_on = CURRENT_TIMESTAMP WHERE id = ?');
+                $updqry->execute(array($secid));
+                $header_redirect = 'index.php';
+                if (!$debug) echo "<a href='".$header_redirect."'>Section deleted, go back to index </a> <meta http-equiv='refresh' content='0; url=".$header_redirect."'>";
+            }
+        }
+        
         echo '<form action="edit_section.php?id='.$secid.'" method="POST">
         <label>Section title:</label><input type="text" name="title" id="sectitle" value="'.$section['title'].'"/></br>';
         echo '<label>Parent section:</label><select name="section" id="secsection"/>';
@@ -97,6 +112,12 @@ if(isLoggedIn()){
             echo '<p>Section homepage: <a href="edit_page.php?id=1">Index</a></p>';
         } else {
             echo 'This section does not have a homepage: <form action="edit_page.php" method="POST"><input type="hidden" name="title" id="pagetitle" value="'.$section['title'].'"/><input type="hidden" name="section" id="pagesec" value="'.$section['parent'].'"/><button type="submit" class="btn btn-success me-2" >Create homepage</button></form>';
+        }
+        
+        if (is_null($section['deleted_on'])) {
+            echo '<div class="mt-4 mb-4"><form action="edit_section.php?id='.$secid.'" method="POST" style="display:inline"><input type="hidden" name="deleted_on" id="pagedel" value="now"/><button type="submit" class="btn btn-danger me-2"/><i class="bi bi-trash-fill"></i>Delete section</button></form></div>';
+        } else {
+            echo '<div class="mt-4 mb-4"><form action="edit_section.php?id='.$secid.'" method="POST" style="display:inline"><input type="hidden" name="deleted_on" id="pagedel" value="not"/><button type="submit" class="btn btn-danger me-2"/><i class="bi bi-trash"></i>Undelete section</button></form></div>';
         }
         
         $result = $pdo->prepare('SELECT pages.id, pages.title, pages.slug, sections.slug as section_slug, sections.title as section_title, sections.public as section_public FROM pages LEFT JOIN sections on pages.section_id = sections.id WHERE sections.id = ? AND pages.deleted_on IS NULL');
