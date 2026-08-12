@@ -11,18 +11,27 @@ if(isLoggedIn()){
     include("header.php");
 
     echo '<div class="row mb-3">';
-    $result = $pdo->prepare('SELECT id,slug,title,public,parent FROM sections WHERE deleted_on IS NULL');
+    //$result = $pdo->prepare('SELECT id,slug,title,public,parent FROM sections WHERE deleted_on IS NULL');
+    $result = $pdo->prepare('SELECT sections.id,sections.slug,sections.title,sections.public,sections.parent, s2.slug as parent_slug, s2.title as parent_title FROM sections LEFT JOIN (SELECT * FROM sections WHERE deleted_on IS NULL) s2 ON sections.parent = s2.id WHERE sections.deleted_on IS NULL');
     $result->execute();
     $sections = $result->fetchAll();
     echo '<h1>Sections</h1>';
     echo '<table>';
-    echo '<tr><th></th><th>Title</th><th>Slug</th><th>Published</th></tr>';
+    echo '<tr><th></th><th>Title</th><th>Slug</th><th>Path</th><th>Published</th></tr>';
     foreach($sections as $row) {
         //print_r($row);
         echo '<tr>';
         echo '<td><a href="edit_section.php?id='.$row['id'].'"><i class="bi bi-pencil-fill"></i></a></td>';
         echo '<td>'.$row['title'].'</td>';
         echo '<td>'.$row['slug'].'</td>';
+        //echo '<td>'.$row['parent_title'].'</td>';
+        $secpath = get_sections_path($row['id']);
+        $secpath_str = '';
+        foreach ($secpath as $sec) {
+            $secpath_str .= '/'.$sec;
+        }
+        $secpath_str = str_replace('//','/',$secpath_str);
+        echo '<td>'.$secpath_str.'</td>';
         $ispub = '<i class="bi bi-check-lg"></i>';
         if ($row['public'] == 0) $ispub = '<i class="bi bi-x-lg"></i>';
         echo '<td>'.$ispub.'</td>';
@@ -131,6 +140,9 @@ if(isLoggedIn()){
     
     echo '<h1>Files</h1>';
     echo '<a href="upload.php">Manage files</a>';
+    
+    echo '</br><h1>Import</h1>';
+    echo '<a href="import_wp.php">Import from Wordpress DB</a>';
     
     if(isset($_POST['render'])) {
         if ($_POST['render'] == 'now') render_website();
