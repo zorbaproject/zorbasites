@@ -16,25 +16,35 @@ if(isLoggedIn()){
         $wpdb = $destdir.'/'.$wpdbname;
     }
     
-    if (isset($_FILES['userdb'])) {
+    if (isset($_FILES['userdb'])||isset($_POST['userdb_name'])) {
+        $destdir = $uploadfolder."/wpimport";
+        while (str_contains($destdir, '//')) $destdir = str_replace('//', '/', $destdir);
+        if (!is_dir($destdir)) mkdir($destdir, 0755, true);
+        if (isset($_FILES['userdb'])) {
         if ($_FILES['userdb']) {
             
             $tmp_name = $_FILES["userdb"]["tmp_name"];
             $name = basename($_FILES["userdb"]["name"]);
-            $destdir = $uploadfolder."/wpimport";
-            while (str_contains($destdir, '//')) $destdir = str_replace('//', '/', $destdir);
-                if (!is_dir($destdir)) mkdir($destdir, 0755, true);
-                $name = 'tmp.db';
+            $name = 'tmp.db';
             move_uploaded_file($tmp_name, $destdir.'/'.$name);
             $fname = preg_replace('/^'.preg_quote($uploadfolder, '/').'/i','',$destdir.'/'.$name);
             
             $wpdb = $destdir.'/'.$name;
+        }
+        }
+        if (isset($_POST['userdb_name'])) {
+        if ($_POST['userdb_name'] != '') {
+            $name = basename($_POST['userdb_name']);
+            $wpdb = $destdir.'/'.$name;
+        }
+        }
             
-            
+        if ($wpdb != ''&&is_file($wpdb)) {
+
             $pdo_temp = new \PDO("sqlite:$wpdb");
             
             echo '<div class="row mb-3">';
-            $result = $pdo_temp->prepare("SELECT p.ID as id, t.name as category FROM wp_posts p INNER JOIN wp_term_relationships tr ON p.ID = tr.object_id INNER JOIN wp_term_taxonomy tt ON tt.term_taxonomy_id = tr.term_taxonomy_id AND tt.taxonomy = 'category' INNER JOIN wp_terms t ON tt.term_id = t.term_id ");
+            $result = $pdo_temp->prepare("SELECT MAX(p.ID) as id, t.name as category FROM wp_posts p INNER JOIN wp_term_relationships tr ON p.ID = tr.object_id INNER JOIN wp_term_taxonomy tt ON tt.term_taxonomy_id = tr.term_taxonomy_id AND tt.taxonomy = 'category' INNER JOIN wp_terms t ON tt.term_id = t.term_id GROUP BY t.name");
             $result->execute();
             $sections = $result->fetchAll();
             echo '<h1>Import Sections</h1>';
@@ -66,8 +76,8 @@ if(isLoggedIn()){
             echo '</div>';
             
             $wpdb = '';
-            
         }
+
     }
     
     if (isset($wpdb)) {
@@ -266,6 +276,12 @@ if(isLoggedIn()){
         echo '<form action="import_wp.php" method="post" enctype="multipart/form-data">
         <input name="userdb" type="file" />
         <input type="submit" value="Upload" />
+        </form>';
+
+        echo '<li>Alternatively (for very large files) load the db via FTP in the "uploads/wpimport", and then write its name here:</li>';
+        echo '<form action="import_wp.php" method="post" >
+        <input name="userdb_name" type="text" />
+        <input type="submit" value="Load from existing file" />
         </form>';
         
         echo '</div>';
