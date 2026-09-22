@@ -478,6 +478,7 @@ function include_pages($html, $pageid) {
 
 function relative_url_fix($content) {
     global $pdo;
+    global $baseurl;
     $fullcontent = $content;
     $allpages = array();
     $result = $pdo->prepare('SELECT id FROM pages WHERE deleted_on IS NULL');
@@ -486,7 +487,7 @@ function relative_url_fix($content) {
     foreach($res as $row) {
         array_push($allpages, get_page_path($row['id']));
     }
-    $urlprefix = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+    $urlprefix = parse_url($baseurl, PHP_URL_PATH);
     $urlprefix = preg_replace('/\/admin\/*[^\/]*$/i', '/', $urlprefix);
     preg_match_all('/(?:src|action|href) *= *[\'"]\K(?!http)[^\'"]*/i', $fullcontent, $urls, PREG_OFFSET_CAPTURE);
     //print_r($urls);

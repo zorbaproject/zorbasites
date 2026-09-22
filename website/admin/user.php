@@ -51,7 +51,8 @@ if(isset($_POST['submitButton'])){
 	$stmt->bindParam(":expires",$expires, PDO::PARAM_INT);
 	$stmt->execute();
 	//header('Location:'.$_SERVER["PHP_SELF"]);
-	echo "<a href='".$_SERVER["PHP_SELF"]."'>Get to the dashboard</a> <meta http-equiv='refresh' content='0; url=".$_SERVER["PHP_SELF"]."'>";
+	//echo "<a href='".$_SERVER["PHP_SELF"]."'>Get to the dashboard</a> <meta http-equiv='refresh' content='0; url=".$_SERVER["PHP_SELF"]."'>";
+    echo "<a href='index.php'>Get to the dashboard</a> <meta http-equiv='refresh' content='0; url=index.php'>";
 	exit(); 
 	}
 	else {echo '<h1>Error:Your login credentials are wrong</h1>';}
@@ -102,7 +103,7 @@ if (!isLoggedIn()) { //show login form if not logged in
   <body class="text-center">
 
 <main class="form-signin">
-  <form id="login" method="post" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>">
+  <form id="login" method="post" >
     <img class="mb-4" src="assets/zorbasites.svg" alt="" height="57">
     <h1 class="h3 mb-3 fw-normal">Please sign in</h1>
 

@@ -11,6 +11,10 @@ $basedir = preg_replace('/[^\/]*$/', '', realpath(__DIR__));
 
 $uploadfolder = $basedir.'upload/';
 
+$baseurl = $_SERVER['REQUEST_URI'];
+/*Set this manually if behind a reverse proxy*/
+//$baseurl = 'https://yourdomain.com';
+
 $installed = file_exists($db);
 
 $debug = false;
