@@ -6,7 +6,8 @@ if(isLoggedIn()){
     updateExpire($user['id']); 
     require_once 'utils.php';
     
-    
+    include("migrations.php");
+    run_migrations($pdo);
     /* Page code */
     include("header.php");
 

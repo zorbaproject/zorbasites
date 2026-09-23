@@ -14,8 +14,10 @@ if(isLoggedIn()){
         $pagetitle = $_POST['title'];
         $pagecredits = "";
         $pagesubtitle = "";
+        $pagefeaturedimage = "";
         if(isset($_POST['subtitle'])) $pagesubtitle = $_POST['subtitle'];
         if(isset($_POST['credits'])) $pagecredits = $_POST['credits'];
+        if(isset($_POST['featuredimage'])) $pagefeaturedimage = $_POST['featuredimage'];
         $pagesection = $_POST['section'];
         $pageslug = slugify($pagetitle);
         $pagepublic = 0;
@@ -49,11 +51,11 @@ if(isLoggedIn()){
                 $s++;
             }
             if (in_array($currentslug, $protected_pages)) {
-                $updqry = $pdo->prepare('UPDATE pages SET title = ?, subtitle = ?, credits = ?, public = ?, onlysource = ?, format = ? WHERE id = ?');
-                $updqry->execute(array($pagetitle, $pagesubtitle, $pagecredits, $pagepublic, $pageonlysource, $pageformat, $pageid));
+                $updqry = $pdo->prepare('UPDATE pages SET title = ?, subtitle = ?, credits = ?, featuredimage = ?, public = ?, onlysource = ?, format = ? WHERE id = ?');
+                $updqry->execute(array($pagetitle, $pagesubtitle, $pagecredits, $pagefeaturedimage, $pagepublic, $pageonlysource, $pageformat, $pageid));
             } else {
-                $updqry = $pdo->prepare('UPDATE pages SET title = ?, subtitle = ?, credits = ?, slug = ?, section_id = ?, public = ?, onlysource = ?, format = ? WHERE id = ?');
-                $updqry->execute(array($pagetitle, $pagesubtitle, $pagecredits, $pageslug, $pagesection, $pagepublic, $pageonlysource, $pageformat, $pageid));
+                $updqry = $pdo->prepare('UPDATE pages SET title = ?, subtitle = ?, credits = ?, featuredimage = ?, slug = ?, section_id = ?, public = ?, onlysource = ?, format = ? WHERE id = ?');
+                $updqry->execute(array($pagetitle, $pagesubtitle, $pagecredits, $pagefeaturedimage, $pageslug, $pagesection, $pagepublic, $pageonlysource, $pageformat, $pageid));
             }
             
             if(isset($_POST['template'])) {
@@ -110,8 +112,8 @@ if(isLoggedIn()){
                 $pageslug = $origslug.'-'.$s;
                 $s++;
             }
-            $insqry = $pdo->prepare('INSERT INTO pages (title, slug, subtitle, credits, section_id, format) VALUES ( ?, ?, ?, ?, ?, ? ) ');
-            $insqry->execute(array($pagetitle, $pageslug, $pagesubtitle, $pagecredits, $pagesection, $pageformat));
+            $insqry = $pdo->prepare('INSERT INTO pages (title, slug, subtitle, credits, featuredimage, section_id, format) VALUES ( ?, ?, ?, ?, ?, ? ) ');
+            $insqry->execute(array($pagetitle, $pageslug, $pagesubtitle, $pagecredits, $pagefeaturedimage, $pagesection, $pageformat));
             $result = $pdo->prepare('SELECT id FROM pages WHERE slug = ? AND section_id = ? AND deleted_on IS NULL');
             $result->execute(array($pageslug, $pagesection));
             $row = $result->fetch();
@@ -246,6 +248,7 @@ if(isLoggedIn()){
         echo '<p>Current slug: '.$page['slug'].'</p>';
         echo '</br><label>Page subtitle:</label><input type="text" name="subtitle" id="pagesubtitle" value="'.$page['subtitle'].'"/>';
         echo '</br><label>Page credits:</label><input type="text" name="credits" id="pagecredits" value="'.$page['credits'].'"/>';
+        echo '</br><label>Page featured image:</label><input type="text" name="featuredimage" id="pagefeaturedimage" value="'.$page['featuredimage'].'"/>';
         echo '<label>Section:</label><select name="section" id="pagesection"/>';
         foreach($sections as $row) {
             $secpath = get_sections_path($row['id']);
