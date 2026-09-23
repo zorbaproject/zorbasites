@@ -70,10 +70,12 @@ The full list of variables is:
 - page.slug
 - page.subtitle
 - page.credits
+- page.featuredimage
+- page.toc
 - page.path
 - section.title
 
-All these variables are related to the current page and its section.
+All these variables are related to the current page and its section. The 'toc' is the Table of contents, automatically generated from header tags (h1-h6) in the page content.
 
 There's also another variable, that will be replaced with the path of the page with the specified id: 
 

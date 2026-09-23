@@ -207,6 +207,7 @@ function replace_variables($text, $pageid) {
         '/\{\{ *page\.slug *\}\}/i' => $page['slug'],
         '/\{\{ *page\.subtitle *\}\}/i' => $page['subtitle'],
         '/\{\{ *page\.credits *\}\}/i' => $page['credits'],
+        '/\{\{ *page\.featuredimage *\}\}/i' => $page['featuredimage'],
         '/\{\{ *page\.path *\}\}/i' => get_page_path($page['id']),
         '/\{\{ *section\.title *\}\}/i' => $section['title']
     );
@@ -216,6 +217,73 @@ function replace_variables($text, $pageid) {
     }
     return $replaced;
 }
+
+//Rewritten idea from https://dev.to/dcblog/use-php-to-generate-table-of-contents-from-heading-tags-5bma
+function set_anchors($html) {
+    $fullcontent = $html;
+    preg_match_all('/<h([1-6])(?:\s[^>]*)?>(.*?)<\/h\1>/is', $html, $matches, PREG_SET_ORDER);
+
+    foreach ($matches as $match) {
+        $text = trim(strip_tags($match[2]));
+        $aslug = strtolower(str_replace("--","-",preg_replace('/[^\da-z]/i', '-', $text)));
+        $anchor = '<a name="'.$aslug.'">'.$text.'</a>';
+        $fullcontent = str_replace($text,$anchor,$fullcontent);
+    }
+    return $fullcontent;
+}
+
+function generateToC($html) {
+
+    preg_match_all('/<h([1-6])(?:\s[^>]*)?>(.*?)<\/h\1>/is', $html, $matches, PREG_SET_ORDER);
+    $output = '';
+    $prev = 0;
+    foreach ($matches as $match) {
+        $curr = $match[1];
+
+        $text = trim(strip_tags($match[2]));
+        $aslug = strtolower(str_replace("--","-",preg_replace('/[^\da-z]/i', '-', $text)));
+
+        if ($curr > $prev) {
+
+            for ($i = $prev; $i < $curr; $i++) {
+                $output .= '<ol class="page-toc">';
+            }
+
+        } elseif ($curr < $prev) {
+
+            for ($i = $prev; $i > $curr; $i--) {
+                $output .= '</li></ol>';
+            }
+            $output .= '</li>';
+
+        } else {
+
+            if ($prev > 0) {
+                $output .= '</li>';
+            }
+        }
+
+        $output .= '<li><a href="#'.$aslug.'">'.$text.'</a>';
+
+        $prev = $curr;
+    }
+
+    if ($output != '') {
+        $output .= '</li>';
+
+        for ($i = $prev; $i > 0; $i--) {
+            $output .= '</ol>';
+
+            if ($i > 1) {
+                $output .= '</li>';
+            }
+        }
+
+    }
+
+    return $output;
+}
+
 
 //Thanks to https://www.linkedin.com/pulse/write-simple-php-script-convert-md-html-callan-milne-bqwuc
 function mdToHTML (
@@ -529,6 +597,7 @@ function render_template($templateid, $content = '', $pageid = -1) {
     $template = $result->fetch();
     $fullcontent = $template['content'];
     $fullcontent = preg_replace('/\{\{ *content *\}\}/i', $content, $fullcontent);
+    $fullcontent = preg_replace('/\{\{ *page\.toc *\}\}/i', generateToC($content), $fullcontent); //Only generate toc from page content, not template
     $fullcontent = include_pages($fullcontent, $pageid);
     if ($pageid > -1) $fullcontent = replace_variables($fullcontent, $pageid);
     return $fullcontent;
@@ -542,6 +611,8 @@ function generate_page($pageid) {
     $page = $result->fetch();
     $fullcontent = $page['content'];
     if ($page['format']=='md') $fullcontent = mdToHTML($page['content']);
+    $fullcontent = set_anchors($fullcontent);
+    $fullcontent = preg_replace('/\{\{ *page\.toc *\}\}/i', generateToC($fullcontent), $fullcontent); //generate page toc if included in page content
     if (is_null($page['template_id'])==false) {
         $fullcontent = render_template($page['template_id'], $fullcontent, $page['id']);
     } else {
