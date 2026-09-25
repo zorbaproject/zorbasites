@@ -49,6 +49,9 @@ if(isLoggedIn()){
             $sections = $result->fetchAll();
             echo '<h1>Import Sections</h1>';
             /* Section creation form */
+            // Source - https://stackoverflow.com/a/63457274
+            echo '<a href="javascript:document.querySelectorAll(\'input[type=checkbox]\').forEach(el => el.checked = false);">Deselect all</a>';
+
             echo '<form action="import_wp.php" method="POST">';
             echo '<table>';
             echo '<tr><th>Import?</th><th>Title</th><th>Slug</th><th>Parent</th></tr>';
@@ -149,6 +152,7 @@ if(isLoggedIn()){
             
             echo '<div class="row mb-3">';
             echo '<h1>Pages</h1>';
+            echo '<a href="javascript:document.querySelectorAll(\'input[type=checkbox]\').forEach(el => el.checked = false);">Deselect all</a>';
             echo '<form action="import_wp.php" method="POST">';
             echo '<table>';
             echo '<tr><th>Import?</th><th>Title</th><th>Slug</th><th>Section</th><th>Template</th></tr>';
@@ -192,7 +196,7 @@ if(isLoggedIn()){
             $result->execute();
             $sections = $result->fetchAll();
             
-            $result = $pdo_temp->prepare("SELECT wp_posts.id as id, wp_posts.post_content as post_content, wp_posts.post_title, wp2.post_title as parent FROM wp_posts LEFT JOIN ( SELECT id, post_title FROM wp_posts WHERE post_type = 'category') wp2 ON wp_posts.post_parent = wp2.id WHERE (wp_posts.post_type = 'page' OR wp_posts.post_type = 'post') AND wp_posts.post_status = 'publish' ;");
+            $result = $pdo_temp->prepare("WITH cte1 AS (SELECT wp_posts.id as id, wp_posts.post_content as post_content, wp_posts.post_title, wp2.post_title as parent FROM wp_posts LEFT JOIN ( SELECT id, post_title FROM wp_posts WHERE post_type = 'category') wp2 ON wp_posts.post_parent = wp2.id WHERE (wp_posts.post_type = 'page' OR wp_posts.post_type = 'post') AND wp_posts.post_status = 'publish' ), cte2 AS (select wp_postmeta.post_id as post_id, wp_posts.guid as thumbnail_url from wp_postmeta left join wp_posts on wp_postmeta.meta_value = wp_posts.ID where meta_key = '_thumbnail_id' ) select cte1.*, cte2.thumbnail_url from cte1 left join cte2 on cte1.id = cte2.post_id;");
             $result->execute();
             $pages = $result->fetchAll();
             
@@ -211,12 +215,21 @@ if(isLoggedIn()){
                     $pagecredits = "";
                     $pagesubtitle = "";
                     $pagecontent = "";
+                    $pagefeaturedimage = "";
                     foreach($pages as $row) {
                         if ($o_pageid == strval($row['id'])) {
+                            $pagefeaturedimage = $row['thumbnail_url'];
                             $pagecontent = $row['post_content'];
                             //replace files in wp-content
                             $pagecontent = preg_replace('/src *= *".*?\/wp-content\/uploads\//i', 'src="/upload/',$pagecontent);
                             $pagecontent = preg_replace('/href *= *".*?\/wp-content\/uploads\//i', 'href="/upload/',$pagecontent);
+                            //replace wp [code] tags
+                            $pagecontent = preg_replace('/\[ *raw *\]/i', "\n<pre class=\"code-highlight\">\n",$pagecontent);
+                            $pagecontent = preg_replace('/\[ *\/raw *\]/i', "\n</pre>\n",$pagecontent);
+                            $pagecontent = preg_replace('/\[ *code *.*\]/i', "\n<code>\n",$pagecontent);
+                            $pagecontent = preg_replace('/\[ *\/code *\]/i', "\n</code>\n",$pagecontent);
+                            $pagecontent = preg_replace('/\[ *caption *.*\]/i', "\n<p class=\"image-caption\">\n",$pagecontent);
+                            $pagecontent = preg_replace('/\[ *\/caption *\]/i', "\n</p>\n",$pagecontent);
                             break;
                         }
                     }
@@ -240,8 +253,8 @@ if(isLoggedIn()){
                         $pageslug = $origslug.'-'.$s;
                         $s++;
                     }
-                    $insqry = $pdo->prepare('INSERT INTO pages (title, slug, subtitle, credits, section_id, format) VALUES ( ?, ?, ?, ?, ?, ? ) ');
-                    $insqry->execute(array($pagetitle, $pageslug, $pagesubtitle, $pagecredits, $pagesection, $pageformat));
+                    $insqry = $pdo->prepare('INSERT INTO pages (title, slug, subtitle, credits, featuredimage, section_id, format) VALUES ( ?, ?, ?, ?, ?, ?, ? ) ');
+                    $insqry->execute(array($pagetitle, $pageslug, $pagesubtitle, $pagecredits, $pagefeaturedimage, $pagesection, $pageformat));
                     $result = $pdo->prepare('SELECT id FROM pages WHERE slug = ? AND section_id = ? AND deleted_on IS NULL');
                     $result->execute(array($pageslug, $pagesection));
                     $row = $result->fetch();
