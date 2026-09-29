@@ -291,11 +291,15 @@ function mdToHTML (
     $subtitleElemType = 'h'  #String HTML Tag name to use for second-level headings
 ) {
     $htmlContent = $input;
+      
+    // Convert tables
+    $htmlContent = markdownTablesToHtml($htmlContent);  
+    
     // Convert paragraphs
     $htmlContent = preg_replace(
         '/([\S ]+)/', 
         '<p>$1</p>', 
-        $input
+        $htmlContent
     );
   
     // Convert headings
@@ -477,6 +481,86 @@ function mdToHTML (
 
     // Output HTML
     return $htmlContent;
+}
+
+function _remove_empty_internal($value) {
+  return !empty(trim($value)) && !is_null($value);
+}
+
+function markdownTablesToHtml($markdown) {
+  /*
+   * Looking for:
+   * - one row for header
+   * - one row for separator
+   * - at least one row for data
+   */
+    
+    $pattern = '/[^|]\n
+(\s*\|[^\n|]+(?:\|[^\n]*)+\|\s*)
+(\s*\|[\s\-]+(?:\|[\s\-]*)+\|\s*)
+(\s*\|[^\n|]+(?:\|[^\n]*)+\|\s*)+
+[^|]\n/mx';
+
+    preg_match_all($pattern, $markdown, $tables, PREG_PATTERN_ORDER);
+    //print_r($tables);
+
+    foreach($tables[0] as $t => $tbtext) {
+        $html = '';
+        $lines = preg_split('/\n/', $tbtext);  //$tables[0][$t]
+        $lines = array_values(array_filter($lines, '_remove_empty_internal'));
+        //print_r($lines);
+
+        $headers = [];
+        // First line
+        foreach(explode('|', $lines[0]) as $h => $head ) {
+            if (count($headers) == 0 && $head == '') continue;
+            $head = trim($head);
+            //echo '%'.$head.'%';
+            if ($head != '|') array_push($headers, $head);
+        }
+        //print_r($headers);
+
+        $html = '<table>' . "\n";
+        $html .= "    <thead>\n";
+        $html .= "        <tr>\n";
+
+        foreach ($headers as $h => $header) {
+            $html .= "            <th>$header</th>\n";
+        }
+
+        $html .= "        </tr>\n";
+        $html .= "    </thead>\n";
+
+        // Table body
+        $html .= "    <tbody>\n";
+
+        for ($l = 2; $l < count($lines); $l++) {
+
+            $cells = [];
+            $row = trim($lines[$l]);
+            foreach(explode('|', $row) as $c => $cell ) {
+                if (count($cells) == 0 && $cell == '') continue;
+                if ($cell != '|') array_push($cells, $cell);
+            }
+
+            $html .= "        <tr>\n";
+
+            foreach ($cells as $c => $cell) {
+                $html .= "            <td>$cell</td>\n";
+            }
+
+            $html .= "        </tr>\n";
+        }
+
+        $html .= "    </tbody>\n";
+
+        $html .= '</table>';
+
+        $markdown = str_replace($tbtext, $html, $markdown);
+    }
+
+    return $markdown;
+
 }
 
 function include_pages($html, $pageid) {
