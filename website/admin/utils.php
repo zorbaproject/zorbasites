@@ -510,6 +510,12 @@ function markdownTablesToHtml($markdown) {
         $lines = array_values(array_filter($lines, '_remove_empty_internal'));
         //print_r($lines);
 
+        $maxcols = 0;
+        //Use the second line to calculate how many columns we have in total
+        foreach(explode('|', $lines[1]) as $s => $sep ) {
+            if (str_contains($sep,'-')) $maxcols++;
+        }
+
         $headers = [];
         // First line
         foreach(explode('|', $lines[0]) as $h => $head ) {
@@ -525,6 +531,7 @@ function markdownTablesToHtml($markdown) {
         $html .= "        <tr>\n";
 
         foreach ($headers as $h => $header) {
+            if ($h >= $maxcols) continue;
             $html .= "            <th>$header</th>\n";
         }
 
@@ -546,6 +553,7 @@ function markdownTablesToHtml($markdown) {
             $html .= "        <tr>\n";
 
             foreach ($cells as $c => $cell) {
+                if ($c >= $maxcols) continue;
                 $html .= "            <td>$cell</td>\n";
             }
 
