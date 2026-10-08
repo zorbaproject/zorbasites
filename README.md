@@ -74,20 +74,20 @@ The full list of variables is:
 - page.toc
 - page.path
 - section.title
+- section.pageslist
 
-All these variables are related to the current page and its section. The 'toc' is the Table of contents, automatically generated from header tags (h1-h6) in the page content.
+All these variables are related to the current page and its section. The 'toc' is the Table of contents, automatically generated from header tags (h1-h6) in the page content. The section's pageslist is a set of <li> elements, one for each page in the current section.
 
-There's also another variable, that will be replaced with the path of the page with the specified id: 
+There's also another set of variables, that will be replaced with properties of the page with the specified id: 
 
-```
-{{ pagepath: id }}
-```
-This is useful to make a link that always points to the same page, even if it gets moved. A similar variable provides the current title of the page with the specified id:
-
-```
-{{ pagetitle: id }}
-```
-This can also be useful for links and menubars.
+- {{ pagepath: id }}: This is the full path of the page. Useful to make a link that always points to the same page, even if it gets moved. A similar variable provides the current title of the page with the specified id:
+- {{ pagetitle: id }}: This is the page title, and can also be useful for links and menubars.
+- {{ pagesubtitle: id }}: The subtitle of the page.
+- {{ pagecredits: id }}: The page's credits string.
+- {{ pagesection: id }}: The page's section name.
+- {{ pagesectionpath: id }}: The full page's section path (useful as href for links).
+- {{ pagefeaturedimage: id }}: The page's featured image full URL.
+- {{ sectionpages: id }}: A set of <li> elements, one for each page in the specified section
 
 ### Templates
 Templates must be written in HTML, and can contain both page variables and the special variable **content**. Templates can also be included in other templates. For example, this could be the **header** template:

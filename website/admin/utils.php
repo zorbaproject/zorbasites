@@ -80,7 +80,7 @@ function slug_exists($slug, $sec, $type = '', $id = -1) {
             }
         }
     }
-    
+
     return $exists;
 }
 
@@ -114,7 +114,7 @@ function get_page_path($pageid) {
             $path .= '/'.$sec;
         }
         $path .= '/'.$row['slug'];
-        if ($row['slug'] != 'index') { 
+        if ($row['slug'] != 'index') {
             $path .= '/';
         } else {
             $path .= '.html';
@@ -202,6 +202,13 @@ function replace_variables($text, $pageid) {
     $result = $pdo->prepare('SELECT * FROM sections WHERE sections.id = ?');
     $result->execute(array($page['section_id']));
     $section = $result->fetch();
+    $sectionpages = '';
+    $result = $pdo->prepare('SELECT pages.id, pages.title, pages.slug, sections.slug as section_slug, sections.title as section_title, sections.public as section_public FROM pages LEFT JOIN sections on pages.section_id = sections.id WHERE sections.id = ? AND pages.deleted_on IS NULL');
+    $result->execute(array($page['section_id']));
+    $spages = $result->fetchAll();
+    foreach($spages as $row) {
+        $sectionpages .= '<li><a href="'.get_page_path($row['id']).'">'.$row['title'].'</a></li>'."\n";
+    }
     $variables = array(
         '/\{\{ *page\.title *\}\}/i' => $page['title'],
         '/\{\{ *page\.slug *\}\}/i' => $page['slug'],
@@ -209,7 +216,8 @@ function replace_variables($text, $pageid) {
         '/\{\{ *page\.credits *\}\}/i' => $page['credits'],
         '/\{\{ *page\.featuredimage *\}\}/i' => $page['featuredimage'],
         '/\{\{ *page\.path *\}\}/i' => get_page_path($page['id']),
-        '/\{\{ *section\.title *\}\}/i' => $section['title']
+        '/\{\{ *section\.title *\}\}/i' => $section['title'],
+        '/\{\{ *section\.pageslist *\}\}/i' => $sectionpages
     );
     foreach($variables as $search => $replace) {
         if (is_null($replace)) $replace = '';
@@ -225,9 +233,12 @@ function set_anchors($html) {
 
     foreach ($matches as $match) {
         $text = trim(strip_tags($match[2]));
+        if( preg_match("/.*<\s*a\s.*/is",$match[2])) continue; //Ignore if there's already a link
         $aslug = strtolower(str_replace("--","-",preg_replace('/[^\da-z]/i', '-', $text)));
         $anchor = '<a name="'.$aslug.'">'.$text.'</a>';
-        $fullcontent = str_replace($text,$anchor,$fullcontent);
+        //$fullcontent = str_replace($text,$anchor,$fullcontent);
+        $thisheader = '<h'.$match[1].'>'.$anchor.'</h'.$match[1].'>';
+        $fullcontent = str_replace($match[0],$thisheader,$fullcontent);
     }
     return $fullcontent;
 }
@@ -291,21 +302,21 @@ function mdToHTML (
     $subtitleElemType = 'h'  #String HTML Tag name to use for second-level headings
 ) {
     $htmlContent = $input;
-      
+
     // Convert tables
-    $htmlContent = markdownTablesToHtml($htmlContent);  
-    
+    $htmlContent = markdownTablesToHtml($htmlContent);
+
     // Convert paragraphs
     $htmlContent = preg_replace(
-        '/([\S ]+)/', 
-        '<p>$1</p>', 
+        '/([\S ]+)/',
+        '<p>$1</p>',
         $htmlContent
     );
-  
+
     // Convert headings
     $subtitleElemTypeNum = $subtitleElemType.'6';
     $htmlContent = preg_replace(
-        '/<p>###### ([\S ]+)<\/p>/', 
+        '/<p>###### ([\S ]+)<\/p>/',
         sprintf(
             '<%s>$1</%s>',
             $subtitleElemTypeNum,
@@ -315,7 +326,7 @@ function mdToHTML (
     );
     $subtitleElemTypeNum = $subtitleElemType.'5';
     $htmlContent = preg_replace(
-        '/<p>##### ([\S ]+)<\/p>/', 
+        '/<p>##### ([\S ]+)<\/p>/',
         sprintf(
             '<%s>$1</%s>',
             $subtitleElemTypeNum,
@@ -325,7 +336,7 @@ function mdToHTML (
     );
     $subtitleElemTypeNum = $subtitleElemType.'4';
     $htmlContent = preg_replace(
-        '/<p>#### ([\S ]+)<\/p>/', 
+        '/<p>#### ([\S ]+)<\/p>/',
         sprintf(
             '<%s>$1</%s>',
             $subtitleElemTypeNum,
@@ -335,7 +346,7 @@ function mdToHTML (
     );
     $subtitleElemTypeNum = $subtitleElemType.'3';
     $htmlContent = preg_replace(
-        '/<p>### ([\S ]+)<\/p>/', 
+        '/<p>### ([\S ]+)<\/p>/',
         sprintf(
             '<%s>$1</%s>',
             $subtitleElemTypeNum,
@@ -345,7 +356,7 @@ function mdToHTML (
     );
     $subtitleElemTypeNum = $subtitleElemType.'2';
     $htmlContent = preg_replace(
-        '/<p>## ([\S ]+)<\/p>/', 
+        '/<p>## ([\S ]+)<\/p>/',
         sprintf(
             '<%s>$1</%s>',
             $subtitleElemTypeNum,
@@ -355,7 +366,7 @@ function mdToHTML (
     );
     $subtitleElemTypeNum = $subtitleElemType.'1';
     $htmlContent = preg_replace(
-        '/<p># ([\S ]+)<\/p>/', 
+        '/<p># ([\S ]+)<\/p>/',
         sprintf(
             '<%s>$1</%s>',
             $subtitleElemTypeNum,
@@ -364,59 +375,59 @@ function mdToHTML (
         $htmlContent
     );
 
-  
+
     // Convert lists
     $htmlContent = preg_replace(
-        '/<p>- ([\S ]+)<\/p>/', 
-        '<li>$1</li>', 
-        $htmlContent
-    );
-    
-    $htmlContent = preg_replace(
-        '/<p>\* ([\S ]+)<\/p>/', 
-        '<li>$1</li>', 
+        '/<p>- ([\S ]+)<\/p>/',
+        '<li>$1</li>',
         $htmlContent
     );
 
     $htmlContent = preg_replace(
-        '/((<li>.*<\/li>\s*)+)/', 
-        '<ul>$1</ul>', 
-        $htmlContent
-    );
-    
-    $htmlContent = preg_replace(
-        '/<p>[0-9]+\. ([\S ]+)<\/p>/', 
-        '<lio>$1</lio>', 
+        '/<p>\* ([\S ]+)<\/p>/',
+        '<li>$1</li>',
         $htmlContent
     );
 
     $htmlContent = preg_replace(
-        '/((<lio>.*<\/lio>\s*)+)/', 
-        '<ol>$1</ol>', 
+        '/((<li>.*<\/li>\s*)+)/',
+        '<ul>$1</ul>',
+        $htmlContent
+    );
+
+    $htmlContent = preg_replace(
+        '/<p>[0-9]+\. ([\S ]+)<\/p>/',
+        '<lio>$1</lio>',
+        $htmlContent
+    );
+
+    $htmlContent = preg_replace(
+        '/((<lio>.*<\/lio>\s*)+)/',
+        '<ol>$1</ol>',
         $htmlContent
     );
     $htmlContent = preg_replace(
-        '/(<\/*)lio>/', 
-        '$1li>', 
+        '/(<\/*)lio>/',
+        '$1li>',
         $htmlContent
     );
-    
+
     //Convert bold and italic
     $htmlContent = preg_replace(
-        '/\*\*([^\*]+)\*\*/', 
-        '<b>$1</b>', 
+        '/\*\*([^\*]+)\*\*/',
+        '<b>$1</b>',
         $htmlContent
     );
     $htmlContent = preg_replace(
-        '/\*([^\*]+)\*/', 
-        '<i>$1</i>', 
+        '/\*([^\*]+)\*/',
+        '<i>$1</i>',
         $htmlContent
     );
-    
+
     //Links and images
     /*$htmlContent = preg_replace(
-        '/\!\[([^\)]*)\]\("*([^")]+)"*\)/', 
-        '<img title="$1" src="$2"/>', 
+        '/\!\[([^\)]*)\]\("*([^")]+)"*\)/',
+        '<img title="$1" src="$2"/>',
         $htmlContent
     );*/
     preg_match_all('/\!\[([^\)]*)\]\("*([^")]+)"*\)/i', $htmlContent, $images, PREG_PATTERN_ORDER);
@@ -445,8 +456,8 @@ function mdToHTML (
         $htmlContent = str_replace($tofind, $imghtml, $htmlContent);
     }
     /*$htmlContent = preg_replace(
-        '/\[(.*?)\]\((.+?)\)/', 
-        '<a href="$2">$1</a>', 
+        '/\[(.*?)\]\((.+?)\)/',
+        '<a href="$2">$1</a>',
         $htmlContent
     );*/
     preg_match_all('/\[(.*?)\]\((.+?)\)/i', $htmlContent, $links, PREG_PATTERN_ORDER);
@@ -466,16 +477,16 @@ function mdToHTML (
         $urlhtml =  '<a href="'.$linkurl.'" '.$linktarget.'>'.$linktext.'</a>';
         $htmlContent = str_replace($tofind, $urlhtml, $htmlContent);
     }
-    
+
     //Quote
     $htmlContent = preg_replace(
-        '/<p>> ([\S ]+)<\/p>/', 
-        '<pre>$1</pre>', 
+        '/<p>> ([\S ]+)<\/p>/',
+        '<pre>$1</pre>',
         $htmlContent
     );
     $htmlContent = preg_replace(
-        '/<\/pre>(\s*)<pre>/', 
-        '$1', 
+        '/<\/pre>(\s*)<pre>/',
+        '$1',
         $htmlContent
     );
 
@@ -494,7 +505,7 @@ function markdownTablesToHtml($markdown) {
    * - one row for separator
    * - at least one row for data
    */
-    
+
     $pattern = '/[^|]\n
 (\s*\|[^\n|]+(?:\|[^\n]*)+\|\s*)
 (\s*\|[\s\-]+(?:\|[\s\-]*)+\|\s*)
@@ -633,6 +644,83 @@ function include_pages($html, $pageid) {
         $page = $result->fetch();
         $fullcontent = str_replace($tofind, $page['title'], $fullcontent);
     }
+    preg_match_all("/\{\{ *pagesubtitle: *([^ ]+) *\}\}/i", $fullcontent, $pagepaths, PREG_PATTERN_ORDER);
+    //print_r($pagepaths);
+    foreach($pagepaths[0] as $i => $tofind) {
+        $toreplace = $pagepaths[1][$i];
+        $rep_content = '';
+        $find_col = 'slug';
+        if (is_numeric($toreplace)) $find_col = 'id';
+        $result = $pdo->prepare('SELECT pages.* FROM pages LEFT JOIN sections on pages.section_id = sections.id WHERE pages.'.$find_col.' = ? AND pages.deleted_on IS NULL AND sections.deleted_on IS NULL');
+        $result->execute(array($toreplace));
+        $page = $result->fetch();
+        $fullcontent = str_replace($tofind, $page['subtitle'], $fullcontent);
+    }
+    preg_match_all("/\{\{ *pagecredits: *([^ ]+) *\}\}/i", $fullcontent, $pagepaths, PREG_PATTERN_ORDER);
+    //print_r($pagepaths);
+    foreach($pagepaths[0] as $i => $tofind) {
+        $toreplace = $pagepaths[1][$i];
+        $rep_content = '';
+        $find_col = 'slug';
+        if (is_numeric($toreplace)) $find_col = 'id';
+        $result = $pdo->prepare('SELECT pages.* FROM pages LEFT JOIN sections on pages.section_id = sections.id WHERE pages.'.$find_col.' = ? AND pages.deleted_on IS NULL AND sections.deleted_on IS NULL');
+        $result->execute(array($toreplace));
+        $page = $result->fetch();
+        $fullcontent = str_replace($tofind, $page['credits'], $fullcontent);
+    }
+    preg_match_all("/\{\{ *pagesection: *([^ ]+) *\}\}/i", $fullcontent, $pagepaths, PREG_PATTERN_ORDER);
+    //print_r($pagepaths);
+    foreach($pagepaths[0] as $i => $tofind) {
+        $toreplace = $pagepaths[1][$i];
+        $rep_content = '';
+        $find_col = 'slug';
+        if (is_numeric($toreplace)) $find_col = 'id';
+        $result = $pdo->prepare('SELECT pages.*,sections.title as sectitle FROM pages LEFT JOIN sections on pages.section_id = sections.id WHERE pages.'.$find_col.' = ? AND pages.deleted_on IS NULL AND sections.deleted_on IS NULL');
+        $result->execute(array($toreplace));
+        $page = $result->fetch();
+        $fullcontent = str_replace($tofind, $page['sectitle'], $fullcontent);
+    }
+    preg_match_all("/\{\{ *pagesectionpath: *([^ ]+) *\}\}/i", $fullcontent, $pagepaths, PREG_PATTERN_ORDER);
+    //print_r($pagepaths);
+    foreach($pagepaths[0] as $i => $tofind) {
+        $toreplace = $pagepaths[1][$i];
+        $rep_content = '';
+        $find_col = 'slug';
+        if (is_numeric($toreplace)) $find_col = 'id';
+        $result = $pdo->prepare('SELECT pages.*,sections.title as sectitle, sections.id as sec_id FROM pages LEFT JOIN sections on pages.section_id = sections.id WHERE pages.'.$find_col.' = ? AND pages.deleted_on IS NULL AND sections.deleted_on IS NULL');
+        $result->execute(array($toreplace));
+        $page = $result->fetch();
+        $fullcontent = str_replace($tofind, get_sections_path($page['sec_id']), $fullcontent);
+    }
+    preg_match_all("/\{\{ *pagefeaturedimage: *([^ ]+) *\}\}/i", $fullcontent, $pagepaths, PREG_PATTERN_ORDER);
+    //print_r($pagepaths);
+    foreach($pagepaths[0] as $i => $tofind) {
+        $toreplace = $pagepaths[1][$i];
+        $rep_content = '';
+        $find_col = 'slug';
+        if (is_numeric($toreplace)) $find_col = 'id';
+        $result = $pdo->prepare('SELECT pages.* FROM pages LEFT JOIN sections on pages.section_id = sections.id WHERE pages.'.$find_col.' = ? AND pages.deleted_on IS NULL AND sections.deleted_on IS NULL');
+        $result->execute(array($toreplace));
+        $page = $result->fetch();
+        $fullcontent = str_replace($tofind, $page['featuredimage'], $fullcontent);
+    }
+
+    preg_match_all("/\{\{ *sectionpages: *([^ ]+) *\}\}/i", $fullcontent, $pagepaths, PREG_PATTERN_ORDER);
+    //print_r($pagepaths);
+    foreach($pagepaths[0] as $i => $tofind) {
+        $toreplace = $pagepaths[1][$i];
+        $rep_content = '';
+        $find_col = 'slug';
+        if (is_numeric($toreplace)) $find_col = 'id';
+        $sectionpages = '';
+        $result = $pdo->prepare('SELECT pages.id, pages.title, pages.slug, sections.slug as section_slug, sections.title as section_title, sections.public as section_public FROM pages LEFT JOIN sections on pages.section_id = sections.id WHERE sections.'.$find_col.' = ? AND pages.deleted_on IS NULL');
+        $result->execute(array($toreplace));
+        $spages = $result->fetchAll();
+        foreach($spages as $row) {
+            $sectionpages .= '<li><a href="'.get_page_path($row['id']).'">'.$row['title'].'</a></li>'."\n";
+        }
+        $fullcontent = str_replace($tofind, $sectionpages, $fullcontent);
+    }
     return $fullcontent;
 }
 
@@ -697,7 +785,7 @@ function render_template($templateid, $content = '', $pageid = -1) {
 
 function generate_page($pageid) {
     global $pdo;
-    
+
     $result = $pdo->prepare('SELECT pages.*,sections.slug as section_slug, sections.title as section_title, sections.public as section_public FROM pages LEFT JOIN sections on pages.section_id = sections.id WHERE pages.id = ?');
     $result->execute(array($pageid));
     $page = $result->fetch();
@@ -718,7 +806,7 @@ function generate_page($pageid) {
 //this is used to get a raw previes of a template
 function generate_template($pageid) {
     global $pdo;
-    
+
     $result = $pdo->prepare('SELECT templates.* FROM templates WHERE templates.id = ?');
     $result->execute(array($pageid));
     $page = $result->fetch();
